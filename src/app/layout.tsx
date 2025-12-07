@@ -19,6 +19,7 @@ export const metadata: Metadata = {
 
 import { ThemeProvider } from "@/components/theme-provider";
 import { AuthProvider } from "@/components/AuthProvider";
+import { DevToolsLoader } from "@/components/debug/DevToolsLoader";
 
 // ... imports
 
@@ -40,6 +41,7 @@ export default function RootLayout({
           >
             <AuthProvider>
               {children}
+              {process.env.APP_ENV === 'local' && <DevToolsLoader />}
             </AuthProvider>
         </ThemeProvider>
       </body>

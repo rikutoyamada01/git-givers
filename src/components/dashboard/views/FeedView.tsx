@@ -5,7 +5,7 @@ import { Issue, RegisteredRepository } from '../types';
 import { useNotImplemented } from '@/hooks/useNotImplemented';
 import { NotImplementedDialog } from '@/components/ui/NotImplementedDialog';
 import Image from 'next/image';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { LoadingState } from '@/components/ui/loading-state';
 import { EmptyState } from '@/components/ui/empty-state';
 
