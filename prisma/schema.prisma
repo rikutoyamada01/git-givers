@@ -83,7 +83,7 @@ model Transaction {
   amount      Int
   description String?
   
-  userId      String
+  userId      String   @default("cmitmmd980000q8883y99y6ys")
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   
   // Optional: Link to a repository if relevant
