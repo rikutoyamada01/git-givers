@@ -60,10 +60,10 @@ const Navbar: React.FC = () => {
           >
 
             <div className="relative w-8 h-8 flex items-center justify-center rounded-lg group-hover:rotate-12 transition-transform duration-300">
-              <Image src="/icon.png" alt="GitKarma Logo" fill className="object-contain" />
+              <Image src="/icon.png" alt="GitGivers Logo" fill className="object-contain" />
             </div>
             <span className="font-bold text-xl tracking-tight text-foreground">
-              Git<span className="text-brand-accent">Karma</span>
+              Git<span className="text-brand-accent">Givers</span>
             </span>
           </div>
 

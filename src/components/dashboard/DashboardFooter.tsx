@@ -22,9 +22,9 @@ export const DashboardFooter: React.FC<DashboardFooterProps> = () => {
                className="cursor-pointer hover:text-brand-text transition-colors p-1 rounded-full hover:bg-brand-panel" 
                title="Go to Home"
             >
-               <Image src="/icon.png" alt="GitKarma Logo" width={24} height={24} className="object-contain" />
+               <Image src="/icon.png" alt="GitGivers Logo" width={24} height={24} className="object-contain" />
             </Link>
-            <span>&copy; {new Date().getFullYear()} GitKarma Project.</span>
+            <span>&copy; {new Date().getFullYear()} GitGivers Project.</span>
           </div>
           
           <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 order-1 md:order-2 font-medium">

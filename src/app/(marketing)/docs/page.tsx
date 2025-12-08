@@ -34,22 +34,22 @@ const Documentation: React.FC = () => {
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-panel border border-brand-border text-xs text-brand-muted mb-4">
             Documentation v1.0
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">GitKarma Documentation</h1>
+          <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">GitGivers Documentation</h1>
           <p className="text-xl text-brand-muted">エコシステムの仕組みと、CLIツールの使用方法について</p>
         </div>
 
         <DocSection title="Getting Started" icon={<Zap className="w-6 h-6" />}>
           <p>
-            GitKarmaを使い始めるには、まずGitHubアカウントでログインし、CLIツールをインストールすることをお勧めします。
+            GitGiversを使い始めるには、まずGitHubアカウントでログインし、CLIツールをインストールすることをお勧めします。
             CLIを使用することで、ターミナルから直接Issueの検索やマッチングを行うことができます。
           </p>
-          <CodeBlock code="$ npm install -g gitkarma-cli" />
-          <CodeBlock code="$ gitkarma login" />
+          <CodeBlock code="$ npm install -g gitgivers-cli" />
+          <CodeBlock code="$ gitgivers login" />
         </DocSection>
 
         <DocSection title="The Karma Cycle" icon={<Gift className="w-6 h-6" />}>
           <p>
-            GitKarmaの経済圏は「Give」から始まります。新規ユーザーはデポジットとして、まず他のプロジェクトへの貢献を行う必要があります。
+            GitGiversの経済圏は「Give」から始まります。新規ユーザーはデポジットとして、まず他のプロジェクトへの貢献を行う必要があります。
           </p>
           <ul className="list-disc pl-5 space-y-2 mt-4 text-brand-muted">
             <li><strong className="text-foreground">Karmaの獲得:</strong> 誰かのIssueを解決し、PRがマージされるとKarmaが付与されます。</li>
@@ -65,19 +65,19 @@ const Documentation: React.FC = () => {
             <div>
               <h3 className="text-foreground font-bold flex items-center gap-2"><ChevronRight className="w-4 h-4 text-brand-accent"/> マッチングを探す</h3>
               <p className="text-sm text-brand-muted mt-1">あなたのスキルスタックに基づいて、最適なIssueを提案します。</p>
-              <CodeBlock code="$ gitkarma find --lang typescript --level easy" />
+              <CodeBlock code="$ gitgivers find --lang typescript --level easy" />
             </div>
 
             <div>
               <h3 className="text-foreground font-bold flex items-center gap-2"><ChevronRight className="w-4 h-4 text-brand-accent"/> 依頼を出す</h3>
-              <p className="text-sm text-brand-muted mt-1">現在のリポジトリのIssueをGitKarmaに登録します。</p>
-              <CodeBlock code="$ gitkarma request --issue 42 --karma 100" />
+              <p className="text-sm text-brand-muted mt-1">現在のリポジトリのIssueをGitGiversに登録します。</p>
+              <CodeBlock code="$ gitgivers request --issue 42 --karma 100" />
             </div>
 
             <div>
               <h3 className="text-foreground font-bold flex items-center gap-2"><ChevronRight className="w-4 h-4 text-brand-accent"/> ステータス確認</h3>
               <p className="text-sm text-brand-muted mt-1">現在の保有Karmaと、進行中のタスクを確認します。</p>
-              <CodeBlock code="$ gitkarma status" />
+              <CodeBlock code="$ gitgivers status" />
             </div>
           </div>
         </DocSection>

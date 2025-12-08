@@ -90,9 +90,9 @@ const DashboardNavbar: React.FC<DashboardNavbarProps> = ({
             className="flex items-center gap-2 cursor-pointer group"
           >
             <div className="w-8 h-8 flex items-center justify-center">
-              <Image src="/icon.png" alt="GitKarma Logo" width={32} height={32} className="object-contain" />
+              <Image src="/icon.png" alt="GitGivers Logo" width={32} height={32} className="object-contain" />
             </div>
-            <span className="font-bold text-brand-text text-sm hidden md:block group-hover:text-brand-accent">GitKarma</span>
+            <span className="font-bold text-brand-text text-sm hidden md:block group-hover:text-brand-accent">GitGivers</span>
           </Link>
           
           <div className="hidden md:flex items-center gap-1.5 ml-2">
@@ -238,9 +238,9 @@ const DashboardNavbar: React.FC<DashboardNavbarProps> = ({
             <div className="p-4 border-b border-brand-border flex items-center justify-between">
                <div className="flex items-center gap-2">
                  <div className="w-8 h-8 flex items-center justify-center">
-                    <Image src="/icon.png" alt="GitKarma Logo" width={32} height={32} className="object-contain" />
+                    <Image src="/icon.png" alt="GitGivers Logo" width={32} height={32} className="object-contain" />
                  </div>
-                 <span className="font-bold text-white text-sm">GitKarma</span>
+                 <span className="font-bold text-white text-sm">GitGivers</span>
                </div>
                <button onClick={() => setIsMobileMenuOpen(false)} className="text-brand-muted">
                  <X className="w-6 h-6" />

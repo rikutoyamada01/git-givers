@@ -12,9 +12,9 @@ const Contribution: React.FC = () => {
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-panel border border-brand-border text-xs text-brand-muted mb-4">
             CONTRIBUTING.md
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">Contributing to GitKarma</h1>
+          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">Contributing to GitGivers</h1>
           <p className="text-xl text-brand-muted">
-             GitKarmaへの貢献に興味を持っていただきありがとうございます。<br/>
+             GitGiversへの貢献に興味を持っていただきありがとうございます。<br/>
              私たちはオープンソースコミュニティの力を信じています。
           </p>
         </div>

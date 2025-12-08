@@ -191,7 +191,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
 
                 <Card className="mb-6 shadow-[0_0_15px_rgba(139,92,246,0.1)]">
                     <CardContent className="p-4">
-                        <h3 className="text-xs font-semibold text-brand-muted uppercase tracking-wider mb-3">GitKarma Stats</h3>
+                        <h3 className="text-xs font-semibold text-brand-muted uppercase tracking-wider mb-3">GitGivers Stats</h3>
                         
                         <div className="flex items-center gap-3 mb-4">
                              <div className="w-10 h-10 rounded-md bg-gradient-to-br from-[#8b5cf6] to-[#6366f1] flex items-center justify-center text-white font-bold text-lg shadow-lg">
@@ -290,7 +290,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                                 </div>
                                 <div className="flex items-center justify-between mb-1">
                                     <h3 className="text-sm font-normal text-brand-text">
-                                        Created a pull request in <span onClick={() => showNotImplemented('Repository Details')} className="font-bold text-brand-accent hover:underline cursor-pointer">gitkarma/frontend</span>
+                                        Created a pull request in <span onClick={() => showNotImplemented('Repository Details')} className="font-bold text-brand-accent hover:underline cursor-pointer">gitgivers/frontend</span>
                                     </h3>
                                     <span className="text-xs text-brand-muted">2 days ago</span>
                                 </div>

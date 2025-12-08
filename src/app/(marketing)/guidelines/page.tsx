@@ -12,7 +12,7 @@ const Guidelines: React.FC = () => {
             Community Standards
           </div>
           <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">コミュニティガイドライン</h1>
-          <p className="text-xl text-brand-muted">GitKarmaは、「技術」と「優しさ」の循環を目指しています。</p>
+          <p className="text-xl text-brand-muted">GitGiversは、「技術」と「優しさ」の循環を目指しています。</p>
         </div>
 
         <div className="space-y-8">
