@@ -1,8 +1,13 @@
+"use client";
 
 import React, { useEffect, useState } from 'react';
 import { GitBranch, Zap, Target } from 'lucide-react';
 import { useNotImplemented } from '@/hooks/useNotImplemented';
 import { NotImplementedDialog } from '@/components/ui/NotImplementedDialog';
+import Image from 'next/image';
+import { Card, CardContent } from '@/components/ui/card';
+import { LoadingState } from '@/components/ui/loading-state';
+import { ErrorState } from '@/components/ui/error-state';
 
 export type UserProfileData = {
   id: string;
@@ -15,10 +20,6 @@ export type UserProfileData = {
     transactionsReceived: number;
   };
 };
-import Image from 'next/image';
-import { Card, CardContent } from '@/components/ui/card';
-import { LoadingState } from '@/components/ui/loading-state';
-import { ErrorState } from '@/components/ui/error-state';
 
 type ProfileViewProps = {
     initialUser?: UserProfileData | null;
@@ -238,7 +239,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                 <div>
                     <div className="mb-4">
                         <div className="flex items-center justify-between mb-2">
-                             <h2 className="text-base font-normal text-brand-text">Karma Activity (GitKarma)</h2>
+                             <h2 className="text-base font-normal text-brand-text">Karma Activity (GitGivers)</h2>
                         </div>
                         <Card className="overflow-hidden">
                              <CardContent className="p-4">

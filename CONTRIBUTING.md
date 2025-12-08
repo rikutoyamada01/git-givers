@@ -1,4 +1,4 @@
-# Contributing to Git Karma
+# Contributing to GitGivers
 
 First off, thanks for taking the time to contribute! ❤️
 
@@ -17,7 +17,7 @@ All types of contributions are encouraged and valued. See the [Table of Contents
 
 ## Code of Conduct
 
-This project and everyone participating in it is governed by the [Git Karma Code of Conduct](.github/CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code. Please report unacceptable behavior to the project maintainers.
+This project and everyone participating in it is governed by the [GitGivers Code of Conduct](.github/CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code. Please report unacceptable behavior to the project maintainers.
 
 ## I Have a Question
 
@@ -54,7 +54,7 @@ We use GitHub issues to track bugs and errors. If you run into an issue with the
 
 ### Suggesting Enhancements
 
-This section guides you through submitting an enhancement suggestion for Git Karma, **including completely new features and minor improvements to existing functionality**. Following these guidelines will help maintainers and the community to understand your suggestion and find related suggestions.
+This section guides you through submitting an enhancement suggestion for GitGivers, **including completely new features and minor improvements to existing functionality**. Following these guidelines will help maintainers and the community to understand your suggestion and find related suggestions.
 
 #### How to Submit a Good Enhancement Suggestion
 

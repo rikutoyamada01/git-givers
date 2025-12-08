@@ -1,9 +1,9 @@
-# Git Karma
+# GitGivers
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Japanese](https://img.shields.io/badge/lang-Japanese-red.svg)](README.ja.md)
 
-**Git Karma** is a mutual contribution platform for Open Source Software. It gamifies the OSS experience by allowing developers to "barter" their skills: help others to earn Karma, and use that Karma to get help on your own projects.
+**GitGivers** is a mutual contribution platform for Open Source Software. It gamifies the OSS experience by allowing developers to "barter" their skills: help others to earn Karma, and use that Karma to get help on your own projects.
 
 > "Your project isn't moving because you aren't helping someone else's project."
 
@@ -11,22 +11,6 @@
 
 </div>
 
-## Concept
-
-Git Karma acts as a "Time Bank" for developers. It solves the problem of neglected OSS projects by creating a circular economy of contributions. Unlike traditional "issue finding" services, Git Karma focuses on **reciprocal exchange**.
-
-## Features
-
-- **🤝 Mutual Contribution Matching**: Automatically matches your skills (e.g., Python, React) with projects that need them.
-- **💎 Karma System**: A credit-based system where you earn points by contributing (Code, Docs, Reviews) and spend them to attract contributors to your repo.
-- **🛡️ Quality Assurance**: Mutual rating system ensures high-quality contributions. To prevent spam, contributions are verified via merged PRs.
-- **🔄 Pay It Forward**: A "Deposit System" where new users must contribute to an existing issue before registering their own repository.
-- **🏆 Gamification**: Earn badges and maintain streaks for consistent activity.
-
-## Getting Started
-
-1. **Sign up with GitHub**: Log in to the Git Karma platform using your GitHub account.
-2. **Pay it Forward (Deposit)**: Before you can ask for help, you must help others. Solve one "Good First Issue" from our curated list to activate your account.
 3. **Earn Karma**: Your contribution is verified, and you earn your first Karma points.
 4. **Register Your Project**: Use your Karma to list your own repository and attract contributors.
 
@@ -80,12 +64,13 @@ Git Karma acts as a "Time Bank" for developers. It solves the problem of neglect
 ## Documentation
 
 ### Project Documentation
-- **[System Architecture](docs/ARCHITECTURE.md)**: Overview of the tech stack and structure.
-- **[Database Schema](docs/DATABASE.md)**: ER diagram and model details.
-- **[Roadmap](docs/ROADMAP.md)**: Future plans.
-- **[Brainstorming](docs/FEATURE_IDEA.md)**: Wild ideas and moonshots.
-- **[Coding Rules](docs/CODING_RULE.md)**: Development standards and conventions.
-- **[AI Guidelines](docs/AI_GUIDELINE.md)**: Policy on using AI tools.
+- **[System Architecture](docs/architecture/02-system-architecture.md)**: Overview of the tech stack and structure.
+- **[Database Schema](docs/architecture/03-database-design.md)**: ER diagram and model details.
+- **[Core Logic](docs/architecture/04-core-logic.md)**: The math behind Karma.
+- **[Grand Roadmap](docs/planning/01-grand-roadmap.md)**: Future plans.
+- **[Coding Standards](docs/guidelines/01-coding-standards.md)**: Code style and principles.
+- **[Workflow](docs/guidelines/02-workflow-protocols.md)**: Git and PR etiquette.
+- **[AI Guidelines](docs/guidelines/03-ai-collaboration.md)**: Policy on using AI tools.
 - **[Changelog](CHANGELOG.md)**: Version history.
 
 ### Community Health

@@ -14,7 +14,7 @@ const HowItWorks: React.FC = () => {
                     技術のわらしべ長者になろう
                 </p>
                 <p className="max-w-2xl text-xl text-brand-muted mx-auto leading-relaxed">
-                    GitKarmaは、一方的なボランティアではありません。<br/>
+                    GitGiversは、一方的なボランティアではありません。<br/>
                     あなたの貢献は、確実にあなたのプロジェクトへと還流します。
                 </p>
             </div>

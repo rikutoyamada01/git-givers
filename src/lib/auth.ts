@@ -26,12 +26,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         const data: { name?: string; image?: string; username?: string } = {}
 
-        // GitHub username は常に同期（GitKarma側では編集不可）
+        // GitHub username は常に同期（GitGivers側では編集不可）
         if (typeof usernameFromProfile === "string") {
           data.username = usernameFromProfile
         }
 
-        // name / image は GitKarma 側で未設定のときだけ GitHub から初期値を入れる
+        // name / image は GitGivers 側で未設定のときだけ GitHub から初期値を入れる
         if (!existing.name && profile && typeof profile.name === "string") {
           data.name = profile.name
         }

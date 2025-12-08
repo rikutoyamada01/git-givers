@@ -11,7 +11,7 @@ describe('LoginPage', () => {
   it('renders the login page correctly', () => {
     render(<LoginPage />)
     
-    expect(screen.getByText('Sign in to GitKarma')).toBeInTheDocument()
+    expect(screen.getByText('Sign in to GitGivers')).toBeInTheDocument()
     expect(screen.getByText('Connect your GitHub account to get started')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /sign in with github/i })).toBeInTheDocument()
   })

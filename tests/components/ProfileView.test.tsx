@@ -28,7 +28,7 @@ describe('ProfileView', () => {
 
     expect(screen.getAllByText('testuser').length).toBeGreaterThan(0)
     expect(screen.getByText('123')).toBeInTheDocument()
-    expect(screen.getByText('Karma Activity (GitKarma)')).toBeInTheDocument()
+    expect(screen.getByText('Karma Activity (GitGivers)')).toBeInTheDocument()
   })
 
   it('submits updated profile', async () => {

@@ -1,3 +1,4 @@
+"use client";
 
 import React, { useState } from 'react';
 import { User, Bell, Shield, Key, CreditCard } from 'lucide-react';
@@ -86,7 +87,7 @@ export const SettingsView = () => {
                                     defaultValue="Guest User"
                                     className="bg-background border border-brand-border rounded-md py-1.5 px-3 text-sm text-brand-text focus:border-brand-accent focus:ring-1 focus:ring-brand-accent focus:outline-none transition-shadow"
                                 />
-                                <p className="text-xs text-brand-muted">Your name may appear around GitKarma where you contribute or are mentioned.</p>
+                                <p className="text-xs text-brand-muted">Your name may appear around GitGivers where you contribute or are mentioned.</p>
                             </div>
 
                             <div className="flex flex-col gap-2">
@@ -141,7 +142,7 @@ export const SettingsView = () => {
                              
                              <div className="flex flex-col gap-2">
                                 <h3 className="text-lg font-medium text-brand-text">Export account data</h3>
-                                <p className="text-sm text-brand-muted">Export all your data from GitKarma.</p>
+                                <p className="text-sm text-brand-muted">Export all your data from GitGivers.</p>
                                 <button onClick={() => showNotImplemented('Export Data')} className="w-fit bg-[#21262d] border border-brand-border hover:bg-brand-border text-brand-text px-4 py-2 rounded-md text-sm font-medium transition-colors">
                                     Start export
                                 </button>

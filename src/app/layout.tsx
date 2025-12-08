@@ -12,16 +12,9 @@ const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "GitKarma - Commit Good, Get Karma.",
-  description: "A mutual contribution platform for OSS. Barter your skills, earn Karma, and grow your projects.",
-};
-
 import { ThemeProvider } from "@/components/theme-provider";
 import { AuthProvider } from "@/components/AuthProvider";
 import { DevToolsLoader } from "@/components/debug/DevToolsLoader";
-
-// ... imports
 
 export default function RootLayout({
   children,

@@ -17,8 +17,8 @@ const Footer: React.FC = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-12 mb-12">
                 <div className="col-span-1 sm:col-span-2 lg:col-span-1">
                     <Link href="/" className="flex items-center gap-2 mb-4 cursor-pointer">
-                        <Image src="/icon.png" alt="GitKarma Logo" width={24} height={24} className="object-contain" />
-                        <span className="font-bold text-foreground text-xl">GitKarma</span>
+                        <Image src="/icon.png" alt="GitGivers Logo" width={24} height={24} className="object-contain" />
+                        <span className="font-bold text-foreground text-xl">GitGivers</span>
                     </Link>
                     <p className="text-sm text-brand-muted leading-relaxed">
                         相互貢献型OSSプラットフォーム。<br />
@@ -47,7 +47,7 @@ const Footer: React.FC = () => {
                 <div>
                     <h4 className="text-foreground font-bold mb-4 tracking-wide">Sponsors</h4>
                     <p className="text-xs text-brand-muted mb-4 leading-relaxed">
-                        GitKarmaは100%オープンソースです。開発の継続をサポートしてください。
+                        GitGiversは100%オープンソースです。開発の継続をサポートしてください。
                     </p>
                     <a 
                         href="https://github.com/sponsors" 
@@ -79,7 +79,7 @@ const Footer: React.FC = () => {
                 </div>
             </div>
             <div className="border-t border-brand-border pt-8 text-center text-sm text-brand-muted font-mono">
-                &copy; {new Date().getFullYear()} GitKarma Project. All rights reserved.
+                &copy; {new Date().getFullYear()} GitGivers Project. All rights reserved.
             </div>
         </div>
     </footer>
