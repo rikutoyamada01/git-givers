@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { GitPullRequest, Zap, ArrowRight, Star, Clock, ChevronLeft, Search, Filter, ExternalLink } from 'lucide-react';
 import { CONTRIBUTED_REPOS, AVAILABLE_CONTRIBUTION_ISSUES } from '../mockData';
-import { ContributedRepo, Issue } from '../types';
+import { ContributedRepo, LegacyIssue } from '../types';
 import { useNotImplemented } from '@/hooks/useNotImplemented';
 import { NotImplementedDialog } from '@/components/ui/NotImplementedDialog';
 import Image from 'next/image';
@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
 
 interface ContributedViewProps {
-    onAcceptIssue: (issue: Issue) => void;
+    onAcceptIssue: (issue: LegacyIssue) => void;
 }
 
 export const ContributedView: React.FC<ContributedViewProps> = ({ onAcceptIssue }) => {

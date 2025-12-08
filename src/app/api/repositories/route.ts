@@ -56,10 +56,9 @@ export async function POST(req: NextRequest) {
       // 2. Create Transaction Record
       await tx.transaction.create({
         data: {
-          amount: REPOSITORY_REGISTRATION_COST,
+          amount: -REPOSITORY_REGISTRATION_COST, // Negative for spending
           description: `Register repository: ${fullName}`,
-          fromUserId: session.user.id!,
-          toUserId: session.user.id!, // System consumption (self-payment for now)
+          userId: session.user.id!,
         },
       })
 

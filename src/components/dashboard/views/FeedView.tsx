@@ -1,12 +1,9 @@
-
 import React, { useState } from 'react';
 import { RefreshCw, GitPullRequest, CircleDot, Zap, Filter, ExternalLink, X, Check } from 'lucide-react';
-import { Issue, RegisteredRepository } from '../types';
+import { Issue, LegacyIssue } from '../types';
 import { useNotImplemented } from '@/hooks/useNotImplemented';
 import { NotImplementedDialog } from '@/components/ui/NotImplementedDialog';
-import Image from 'next/image';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { LoadingState } from '@/components/ui/loading-state';
 import { EmptyState } from '@/components/ui/empty-state';
 
 export const SparklesIcon = () => (
@@ -15,7 +12,7 @@ export const SparklesIcon = () => (
     </svg>
 );
 
-export const ActiveMissionCard = ({ issue, onAbandon }: { issue: Issue, onAbandon: () => void }) => {
+export const ActiveMissionCard = ({ issue, onAbandon }: { issue: Issue | LegacyIssue, onAbandon: () => void }) => {
     const [isAbandoning, setIsAbandoning] = useState(false);
     const [isChecking, setIsChecking] = useState(false);
     const [status, setStatus] = useState("Waiting for Pull Request...");
@@ -30,8 +27,19 @@ export const ActiveMissionCard = ({ issue, onAbandon }: { issue: Issue, onAbando
     };
 
     const openPullRequestPage = () => {
-        window.open(`https://github.com/${issue.repo}/compare`, '_blank');
+        // Construct PR URL or just open issue for now
+        if ('repository' in issue && issue.repository?.url) {
+             window.open(`${issue.repository.url}/compare`, '_blank');
+        } else if ('htmlUrl' in issue) {
+             window.open(issue.htmlUrl, '_blank');
+        } else {
+             // Fallback for LegacyIssue
+             window.open(`https://github.com/${(issue as LegacyIssue).repo || ''}/compare`, '_blank');
+        }
     };
+
+    const displayRepo = 'repository' in issue ? issue.repository?.fullName : (issue as LegacyIssue).repo;
+    const displayKarma = issue.karma || 0;
 
     return (
         <div className="bg-background border border-[#238636] rounded-md overflow-hidden shadow-[0_0_15px_rgba(35,134,54,0.1)] relative">
@@ -49,15 +57,18 @@ export const ActiveMissionCard = ({ issue, onAbandon }: { issue: Issue, onAbando
 
              <div className="p-6">
                 <div className="flex items-start gap-4 mb-6">
-                    <Image src={issue.icon} alt="" width={48} height={48} className="rounded-md border border-brand-border" />
+                    {/* Placeholder for missing icon */}
+                    <div className="w-12 h-12 rounded-md border border-brand-border bg-brand-muted/10 flex items-center justify-center">
+                        <GitPullRequest className="w-6 h-6 text-brand-muted" />
+                    </div>
                     <div>
                         <h3 className="text-lg font-bold text-brand-text mb-1 leading-snug">{issue.title}</h3>
                         <div className="text-sm text-brand-muted flex items-center gap-2">
-                            <span>{issue.repo}</span>
+                            <span>{displayRepo || 'Unknown Repo'}</span>
                             <span>•</span>
                             <span className="flex items-center gap-1 text-[#e3b341]">
                                 <Zap className="w-3 h-3" />
-                                {issue.karma} Karma
+                                {displayKarma} Karma
                             </span>
                         </div>
                     </div>
@@ -124,52 +135,32 @@ export const FeedView = ({
     activeIssue, 
     onAbandon, 
     onPass, 
+    issues = [],
+    currentIndex = 0,
 }: { 
-    activeIssue: Issue | null,
+    activeIssue: Issue | LegacyIssue | null,
     onAbandon: () => void,
     onPass: () => void,
+    issues?: Issue[], 
+    currentIndex?: number
 }) => {
     const { isOpen, featureName, showNotImplemented, closeNotImplemented } = useNotImplemented();
-    const [repositories, setRepositories] = useState<RegisteredRepository[]>([]);
-    const [loading, setLoading] = useState(true);
-
-    // Fetch repositories on mount
-    React.useEffect(() => {
-        async function fetchRepositories() {
-            try {
-                const response = await fetch("/api/repositories");
-                if (response.ok) {
-                    const data = await response.json();
-                    setRepositories(data);
-                }
-            } catch (error) {
-                console.error("Failed to fetch repositories", error);
-            } finally {
-                setLoading(false);
-            }
-        }
-        fetchRepositories();
-    }, []);
 
     if (activeIssue) {
         return <ActiveMissionCard issue={activeIssue} onAbandon={onAbandon} />;
     }
 
-    if (loading) {
-        return <LoadingState text="Loading feed..." />;
-    }
+    // Using the props passed from Dashboard
+    // issues contains real Issue objects
+    const displayIssue = issues.length > 0 ? issues[currentIndex % issues.length] : null;
 
-    // If no real data, fallback to currentIssue (mock) for now, or show empty state
-    // For this implementation, we will try to show the first fetched repo as a "card" if available
-    const displayRepo = repositories.length > 0 ? repositories[0] : null;
-
-    if (!displayRepo) {
+    if (!displayIssue) {
          return (
             <Card className="min-h-[500px] flex flex-col items-center justify-center">
                 <EmptyState
                     icon={SparklesIcon}
-                    title="No active projects found"
-                    description="Be the first to register a repository and start earning Karma!"
+                    title="No active missions found"
+                    description="Sync some repositories to see issues here!"
                 />
             </Card>
          );
@@ -181,7 +172,7 @@ export const FeedView = ({
             <CardHeader className="flex flex-row items-center justify-between border-b border-brand-border p-4 space-y-0">
                 <div className="flex items-center gap-2">
                     <SparklesIcon />
-                    <span className="font-bold text-brand-text">Suggested for you</span>
+                    <span className="font-bold text-brand-text">Suggested Mission</span>
                 </div>
                 <div className="flex items-center gap-2">
                     <button onClick={() => showNotImplemented('Filter')} className="text-brand-muted hover:text-brand-accent"><Filter className="w-4 h-4" /></button>
@@ -197,38 +188,41 @@ export const FeedView = ({
                 <div className="w-full bg-brand-panel border border-brand-border rounded-xl p-6 shadow-2xl relative">
                     <div className="flex items-start justify-between mb-6">
                         <div className="flex items-center gap-4">
-                            {/* Placeholder Icon since we don't store icons yet */}
+                            {/* Placeholder Icon */}
                             <div className="w-12 h-12 rounded-md border border-brand-border bg-brand-muted/10 flex items-center justify-center">
                                 <GitPullRequest className="w-6 h-6 text-brand-muted" />
                             </div>
                             <div>
                                 <h3 
-                                    onClick={() => window.open(displayRepo.url, '_blank')}
+                                    onClick={() => window.open(displayIssue.htmlUrl || '#', '_blank')}
                                     className="text-lg font-bold text-brand-text hover:text-brand-accent cursor-pointer flex items-center gap-2"
                                 >
-                                    {displayRepo.fullName}
+                                    {displayIssue.repository?.fullName || "Unknown Repo"}
                                     <ExternalLink className="w-3 h-3 text-brand-muted" />
                                 </h3>
-                                <div className="text-xs text-brand-muted mt-1">Registered by {displayRepo.registeredBy?.name || 'Unknown'}</div>
+                                <div className="text-xs text-brand-muted mt-1">
+                                    Issue #{displayIssue.number} • {displayIssue.updatedAt ? new Date(displayIssue.updatedAt).toLocaleDateString() : 'Unknown date'}
+                                </div>
                             </div>
                         </div>
                         <div className="flex flex-col items-end">
                             <span className="text-2xl font-bold text-[#e3b341] flex items-center gap-1">
                                 <Zap className="w-5 h-5 fill-[#e3b341]" />
-                                ???
+                                {/* Placeholder Karma Reward calculation */}
+                                {100} 
                             </span>
-                            <span className="text-xs text-brand-muted uppercase tracking-wider">Bounty</span>
+                            <span className="text-xs text-brand-muted uppercase tracking-wider">Reward</span>
                         </div>
                     </div>
 
                     <div className="mb-6">
-                        <h2 className="text-xl font-bold text-brand-text mb-3 leading-snug">{displayRepo.name}</h2>
-                        <p className="text-brand-muted leading-relaxed text-sm mb-4">
-                            {displayRepo.description || "No description provided."}
+                        <h2 className="text-xl font-bold text-brand-text mb-3 leading-snug">{displayIssue.title}</h2>
+                        <p className="text-brand-muted leading-relaxed text-sm mb-4 line-clamp-3">
+                            {displayIssue.body || "No description provided."}
                         </p>
                         <div className="flex flex-wrap gap-2">
                             <span className="px-2 py-1 rounded-full bg-[#30363d] text-brand-text text-xs border border-brand-border">
-                                Repository
+                                {displayIssue.state}
                             </span>
                         </div>
                     </div>
@@ -242,7 +236,7 @@ export const FeedView = ({
                             Pass
                         </button>
                         <button 
-                            onClick={() => window.open(displayRepo.url, '_blank')}
+                            onClick={() => window.open(displayIssue.htmlUrl || '#', '_blank')}
                             className="flex items-center justify-center gap-2 py-3 rounded-lg bg-brand-success text-brand-text hover:bg-brand-success/80 transition-all font-bold shadow-lg shadow-green-900/20"
                         >
                             <Check className="w-5 h-5" />

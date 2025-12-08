@@ -31,8 +31,7 @@ export async function GET() {
     include: {
       _count: {
         select: {
-          transactionsSent: true,
-          transactionsReceived: true,
+          transactions: true,
         },
       },
     },

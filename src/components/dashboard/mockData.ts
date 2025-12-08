@@ -1,7 +1,7 @@
 
-import { Issue, MyRequest, RepoIssue, Transaction, UserRepo, ContributedRepo } from "./types";
+import { LegacyIssue, MyRequest, RepoIssue, Transaction, UserRepo, ContributedRepo } from "./types";
 
-export const MOCK_ISSUES: Issue[] = [
+export const MOCK_ISSUES: LegacyIssue[] = [
   {
     id: 1,
     repo: "facebook/react",
@@ -102,7 +102,7 @@ export const CONTRIBUTED_REPOS: ContributedRepo[] = [
 ];
 
 // Mock issues available for the contributed repos
-export const AVAILABLE_CONTRIBUTION_ISSUES: Record<string, Issue[]> = {
+export const AVAILABLE_CONTRIBUTION_ISSUES: Record<string, LegacyIssue[]> = {
     "facebook/react": [
         {
             id: 201,

@@ -1,5 +1,20 @@
 
 export interface Issue {
+  id: string; // CUID from DB
+  githubId: number;
+  number: number;
+  title: string;
+  body: string | null;
+  state: string;
+  htmlUrl: string;
+  repositoryId: string;
+  repository?: RegisteredRepository; // Relation
+  createdAt: string;
+  updatedAt: string;
+  karma?: number; 
+}
+
+export interface LegacyIssue {
   id: number;
   repo: string;
   icon: string;

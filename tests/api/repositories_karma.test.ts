@@ -125,12 +125,11 @@ describe('POST /api/repositories (Karma Logic)', () => {
 
     // Check Transaction record creation
     expect(prisma.transaction.create).toHaveBeenCalledWith({
-      data: {
-        amount: 50,
+      data: expect.objectContaining({
+        amount: -50,
         description: expect.stringContaining('Register repository'),
-        fromUserId: 'user-1',
-        toUserId: 'user-1', // Self-payment/System consumption
-      },
+        userId: 'user-1',
+      }),
     })
 
     // Check Repository creation

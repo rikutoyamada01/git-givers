@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, Inbox, Zap, GitPullRequest } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
@@ -14,48 +14,71 @@ import { SettingsView } from '../../../components/dashboard/views/SettingsView';
 import { ProfileView } from '../../../components/dashboard/views/ProfileView';
 import { ContributedView } from '../../../components/dashboard/views/ContributedView';
 import { SearchView } from '../../../components/dashboard/views/SearchView';
-import { MOCK_ISSUES } from '../../../components/dashboard/mockData';
-import { Issue, DashboardView } from '../../../components/dashboard/types';
+import { Issue, LegacyIssue, DashboardView } from '../../../components/dashboard/types';
 import RegisterRepositoryView from '../../../components/dashboard/views/RegisterRepositoryView';
+import { LoadingState } from '@/components/ui/loading-state';
 
 const Dashboard: React.FC = () => {
   const router = useRouter();
-  const [activeIssue, setActiveIssue] = useState<Issue | null>(null);
-  const [karma, setKarma] = useState(1250);
+  const [activeIssue, setActiveIssue] = useState<Issue | LegacyIssue | null>(null);
+  const [user, setUser] = useState<{ karma: number, name?: string, image?: string } | null>(null);
+  
+  // Changed from repositories to issues for Phase 1
+  const [issues, setIssues] = useState<Issue[]>([]); 
   const [view, setView] = useState<DashboardView>('feed');
   const [searchQuery, setSearchQuery] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
 
   // Swipe State
   const [currentIssueIndex, setCurrentIssueIndex] = useState(0);
-  const currentIssue = MOCK_ISSUES[currentIssueIndex];
+
+  // Fetch initial data
+  useEffect(() => {
+    async function initData() {
+        try {
+            const [userRes, issuesRes] = await Promise.all([
+                fetch('/api/users'),
+                fetch('/api/issues')
+            ]);
+            
+            if (userRes.ok) {
+                const userData = await userRes.json();
+                setUser(userData);
+            }
+            if (issuesRes.ok) {
+                const issuesData = await issuesRes.json();
+                setIssues(issuesData);
+            }
+        } catch (error) {
+            console.error("Failed to load dashboard data", error);
+        } finally {
+            setIsLoading(false);
+        }
+    }
+    initData();
+  }, []);
 
   const handleNext = () => {
-    setCurrentIssueIndex((prev) => (prev + 1) % MOCK_ISSUES.length);
-  };
-
-  const handleAccept = (issue?: Issue) => {
-    const targetIssue = issue || currentIssue;
-    window.open(targetIssue.html_url, '_blank');
-    setActiveIssue(targetIssue);
-    // If accepting an issue, typically you stay on the Feed/Overview tab where the active mission is shown.
-    setView('feed'); 
+    if (issues.length > 0) {
+        setCurrentIssueIndex((prev) => (prev + 1) % issues.length);
+    }
   };
 
   const handlePublishRequest = (amount: number) => {
-    setKarma(prev => prev - Math.floor(amount * 1.05)); // Deduct karma + fee
-    setView('my-requests'); // Go to my requests after publishing
+    if (user) {
+        setUser({ ...user, karma: user.karma - Math.floor(amount * 1.05) });
+    }
+    setView('my-requests');
   };
 
   const handleNavigate = (page: string) => {
       if (page === 'home') {
-          // Trigger NextAuth sign out
           window.location.href = '/api/auth/signout';
       } else if (page === 'docs') {
           router.push('/docs');
       } else if (page === 'guidelines') {
           router.push('/guidelines');
       } else {
-          // Handle other pages or default
           console.log('Navigate to:', page);
       }
   };
@@ -66,6 +89,8 @@ const Dashboard: React.FC = () => {
   };
 
   const renderContent = () => {
+      if (isLoading && !user) return <LoadingState text="Loading dashboard..." />;
+
       switch (view) {
           case 'create':
               return <CreateRequestView onPublish={handlePublishRequest} onCancel={() => setView('feed')} />;
@@ -80,15 +105,17 @@ const Dashboard: React.FC = () => {
           case 'profile':
               return <ProfileView />;
           case 'contributions':
-              return <ContributedView onAcceptIssue={handleAccept} />;
+              return <ContributedView onAcceptIssue={(issue) => setActiveIssue(issue)} />;
           case 'search':
-              return <SearchView query={searchQuery} onAccept={handleAccept} />;
+              return <SearchView query={searchQuery} onAccept={(issue) => setActiveIssue(issue)} />;
           case 'feed':
           default:
               return <FeedView 
-                  activeIssue={activeIssue} 
-                  onAbandon={() => setActiveIssue(null)}
+                  activeIssue={activeIssue}
+                  issues={issues}
+                  currentIndex={currentIssueIndex}
                   onPass={handleNext}
+                  onAbandon={() => setActiveIssue(null)}
               />;
       }
   };
@@ -97,7 +124,7 @@ const Dashboard: React.FC = () => {
     <div className="min-h-screen bg-background font-sans text-brand-text flex flex-col">
       <DashboardNavbar 
         onNavigate={handleNavigate} 
-        karma={karma} 
+        karma={user?.karma || 0} 
         onCreateClick={() => setView('create')} 
         onHistoryClick={() => setView('history')}
         onSettingsClick={() => setView('settings')}
@@ -105,14 +132,13 @@ const Dashboard: React.FC = () => {
         onSearch={handleSearch}
         currentView={view}
         onViewChange={setView}
+        userImage={user?.image}
       />
       
       <main className="max-w-[1280px] mx-auto p-4 md:p-6 md:flex gap-6 w-full flex-1">
-        {/* Left Sidebar - hidden on settings/profile page typically, but let's keep it for navigation consistency or hide it */}
-        {view !== 'settings' && view !== 'profile' && <LeftSidebar karma={karma} onHistoryClick={() => setView('history')} onViewChange={setView} />}
+        {view !== 'settings' && view !== 'profile' && <LeftSidebar karma={user?.karma || 0} onHistoryClick={() => setView('history')} onViewChange={setView} />}
 
         <div className="flex-1 min-w-0">
-             {/* Tab Navigation - Only show if not in Create/Profile/Settings mode */}
              {view !== 'create' && view !== 'profile' && view !== 'settings' && (
                 <div className="border-b border-brand-border flex gap-6 px-2 mb-6 overflow-x-auto">
                     <button 
@@ -149,7 +175,6 @@ const Dashboard: React.FC = () => {
              {renderContent()}
         </div>
 
-        {/* Right Sidebar - Hide on Settings, History, Profile views to give more space */}
         {view !== 'settings' && view !== 'history' && view !== 'profile' && <RightSidebar />}
       </main>
 

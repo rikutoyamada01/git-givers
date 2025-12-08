@@ -19,6 +19,7 @@ interface DashboardNavbarProps {
   onSearch: (query: string) => void;
   currentView: DashboardView;
   onViewChange: (view: DashboardView) => void;
+  userImage?: string;
 }
 
 const DashboardNavbar: React.FC<DashboardNavbarProps> = ({ 
@@ -30,7 +31,8 @@ const DashboardNavbar: React.FC<DashboardNavbarProps> = ({
   onProfileClick,
   onSearch,
   currentView,
-  onViewChange
+  onViewChange,
+  userImage
 }) => {
   const [isCreateMenuOpen, setIsCreateMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
@@ -39,14 +41,15 @@ const DashboardNavbar: React.FC<DashboardNavbarProps> = ({
   const inputRef = useRef<HTMLInputElement>(null);
   const { isOpen, featureName, showNotImplemented, closeNotImplemented } = useNotImplemented();
   const { data: session } = useSession();
-  const user = session?.user as
+  const sessionUser = session?.user as
     | ({ name?: string | null; image?: string | null; username?: string | null })
     | undefined;
 
-  const userName = user?.name ?? user?.username ?? 'Guest';
-  const userImage =
-    user?.image ||
-    (user?.username ? `https://github.com/${user.username}.png` : undefined);
+  const userName = sessionUser?.name ?? sessionUser?.username ?? 'Guest';
+  const displayUserImage =
+    userImage ||
+    sessionUser?.image ||
+    (sessionUser?.username ? `https://github.com/${sessionUser.username}.png` : undefined);
 
   useEffect(() => {
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
@@ -162,16 +165,15 @@ const DashboardNavbar: React.FC<DashboardNavbarProps> = ({
             <Bell className="w-4 h-4 text-brand-text" />
             <span className="absolute -top-1 -right-1 w-2 h-2 bg-[#1f6feb] rounded-full border-2 border-brand-panel"></span>
           </div>
-
           <div className="relative ml-1">
             <button 
               className="flex items-center gap-1 cursor-pointer"
               onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
             >
               <div className="w-5 h-5 rounded-full bg-[#30363d] flex items-center justify-center border border-brand-border overflow-hidden">
-                {userImage ? (
+                {displayUserImage ? (
                   <Image
-                    src={userImage}
+                    src={displayUserImage}
                     alt={userName}
                     width={20}
                     height={20}

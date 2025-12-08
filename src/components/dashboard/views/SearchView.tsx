@@ -1,14 +1,14 @@
 
 import React from 'react';
 import { ExternalLink, Zap } from 'lucide-react';
-import { Issue } from '../types';
+import { LegacyIssue } from '../types';
 import { MOCK_ISSUES, AVAILABLE_CONTRIBUTION_ISSUES } from '../mockData';
 import { useNotImplemented } from '@/hooks/useNotImplemented';
 import { NotImplementedDialog } from '@/components/ui/NotImplementedDialog';
 
 interface SearchViewProps {
     query: string;
-    onAccept: (issue: Issue) => void;
+    onAccept: (issue: LegacyIssue) => void;
 }
 
 export const SearchView: React.FC<SearchViewProps> = ({ query, onAccept }) => {
