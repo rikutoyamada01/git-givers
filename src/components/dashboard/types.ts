@@ -81,6 +81,7 @@ export interface RegisteredRepository {
     fullName: string;
     url: string;
     description: string | null;
+    stargazersCount: number;
     registeredBy: {
         id: string;
         name: string | null;

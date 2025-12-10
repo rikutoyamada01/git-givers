@@ -110,6 +110,7 @@ describe("API /api/repositories", () => {
         fullName: "user/new-repo",
         url: "http://github.com/user/new-repo",
         description: "A new test repository",
+        stargazersCount: 0,
       })
       vi.mocked(prisma.repository.create).mockResolvedValue(newRepo)
 
@@ -143,6 +144,7 @@ describe("API /api/repositories", () => {
           fullName: "user/new-repo",
           url: "http://github.com/user/new-repo",
           description: "A new test repository",
+          stargazersCount: 0,
           registeredBy: {
             connect: {
               id: "testUserId",

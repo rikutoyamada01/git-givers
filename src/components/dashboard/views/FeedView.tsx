@@ -5,6 +5,7 @@ import { useNotImplemented } from '@/hooks/useNotImplemented';
 import { NotImplementedDialog } from '@/components/ui/NotImplementedDialog';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
+import { calculateIssueReward } from '@/lib/karma';
 
 export const SparklesIcon = () => (
     <svg className="w-4 h-4 text-[#e3b341]" fill="currentColor" viewBox="0 0 24 24">
@@ -39,7 +40,11 @@ export const ActiveMissionCard = ({ issue, onAbandon }: { issue: Issue | LegacyI
     };
 
     const displayRepo = 'repository' in issue ? issue.repository?.fullName : (issue as LegacyIssue).repo;
-    const displayKarma = issue.karma || 0;
+    
+    let displayKarma = issue.karma || 0;
+    if ('repository' in issue && issue.repository && issue.repository.stargazersCount !== undefined) {
+        displayKarma = calculateIssueReward({ stars: issue.repository.stargazersCount });
+    }
 
     return (
         <div className="bg-background border border-[#238636] rounded-md overflow-hidden shadow-[0_0_15px_rgba(35,134,54,0.1)] relative">
@@ -131,6 +136,8 @@ export const ActiveMissionCard = ({ issue, onAbandon }: { issue: Issue | LegacyI
     );
 };
 
+import toast from 'react-hot-toast';
+
 export const FeedView = ({ 
     activeIssue, 
     onAbandon, 
@@ -145,13 +152,13 @@ export const FeedView = ({
     currentIndex?: number
 }) => {
     const { isOpen, featureName, showNotImplemented, closeNotImplemented } = useNotImplemented();
+    const [boosting, setBoosting] = useState(false);
 
     if (activeIssue) {
         return <ActiveMissionCard issue={activeIssue} onAbandon={onAbandon} />;
     }
 
     // Using the props passed from Dashboard
-    // issues contains real Issue objects
     const displayIssue = issues.length > 0 ? issues[currentIndex % issues.length] : null;
 
     if (!displayIssue) {
@@ -165,6 +172,34 @@ export const FeedView = ({
             </Card>
          );
     }
+    
+    const handleBoost = async () => {
+        if (!displayIssue) return;
+        setBoosting(true);
+        try {
+            const response = await fetch('/api/boost', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    issueId: displayIssue.id,
+                    amount: 50 // Fixed boost amount for now
+                })
+            });
+            
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.message || 'Boost failed');
+            }
+            
+            const result = await response.json();
+            toast.success(`Boosted ${result.amount} Karma!`);
+            // Optimistic update or refresh could happen here
+        } catch (error: unknown) {
+            toast.error(error instanceof Error ? error.message : "An error occurred");
+        } finally {
+            setBoosting(false);
+        }
+    };
 
     return (
         <Card className="min-h-[500px] flex flex-col relative">
@@ -208,8 +243,9 @@ export const FeedView = ({
                         <div className="flex flex-col items-end">
                             <span className="text-2xl font-bold text-[#e3b341] flex items-center gap-1">
                                 <Zap className="w-5 h-5 fill-[#e3b341]" />
-                                {/* Placeholder Karma Reward calculation */}
-                                {100} 
+                                {displayIssue.repository?.stargazersCount !== undefined 
+                                    ? calculateIssueReward({ stars: displayIssue.repository.stargazersCount }) 
+                                    : 100}
                             </span>
                             <span className="text-xs text-brand-muted uppercase tracking-wider">Reward</span>
                         </div>
@@ -224,6 +260,14 @@ export const FeedView = ({
                             <span className="px-2 py-1 rounded-full bg-[#30363d] text-brand-text text-xs border border-brand-border">
                                 {displayIssue.state}
                             </span>
+                            <button
+                                onClick={handleBoost}
+                                disabled={boosting}
+                                className="px-2 py-1 rounded-full bg-[#f1e05a]/10 text-[#f1e05a] text-xs border border-[#f1e05a]/20 hover:bg-[#f1e05a]/20 transition-colors flex items-center gap-1 disabled:opacity-50"
+                            >
+                                <Zap className="w-3 h-3" />
+                                Boost (+50)
+                            </button>
                         </div>
                     </div>
 

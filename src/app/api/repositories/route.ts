@@ -2,6 +2,8 @@ import { auth } from "@/lib/auth"
 import { NextRequest, NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
 
+import { REPOSITORY_REGISTRATION_COST } from "@/lib/karma"
+
 export async function POST(req: NextRequest) {
   const session = await auth()
 
@@ -10,7 +12,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { githubId, name, fullName, url, description } = await req.json()
+    const { githubId, name, fullName, url, description, stargazersCount } = await req.json()
 
     if (!githubId || !name || !fullName || !url) {
       return NextResponse.json(
@@ -35,8 +37,6 @@ export async function POST(req: NextRequest) {
       where: { id: session.user.id },
       select: { karma: true },
     })
-
-    const REPOSITORY_REGISTRATION_COST = 50
 
     if (!user || user.karma < REPOSITORY_REGISTRATION_COST) {
       return NextResponse.json(
@@ -70,6 +70,7 @@ export async function POST(req: NextRequest) {
           fullName,
           url,
           description,
+          stargazersCount: stargazersCount || 0,
           registeredBy: {
             connect: {
               id: session.user.id,

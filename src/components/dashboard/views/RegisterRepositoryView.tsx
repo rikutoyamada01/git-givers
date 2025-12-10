@@ -8,6 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { LoadingState } from "@/components/ui/loading-state"
 import { ErrorState } from "@/components/ui/error-state"
 
+import { REPOSITORY_REGISTRATION_COST } from "@/lib/karma"
+
 interface GitHubRepo {
   id: number
   name: string
@@ -15,6 +17,7 @@ interface GitHubRepo {
   html_url: string
   description: string | null
   private: boolean
+  stargazers_count: number
 }
 
 interface RegisterRepositoryViewProps {
@@ -85,8 +88,8 @@ export default function RegisterRepositoryView({ onCancel }: RegisterRepositoryV
   const handleRegister = async () => {
     if (!selectedRepo) return
 
-    if (userKarma < 50) {
-      toast.error("Insufficient Karma. You need 50 Karma to register a repository.")
+    if (userKarma < REPOSITORY_REGISTRATION_COST) {
+      toast.error(`Insufficient Karma. You need ${REPOSITORY_REGISTRATION_COST} Karma to register a repository.`)
       return
     }
 
@@ -103,8 +106,10 @@ export default function RegisterRepositoryView({ onCancel }: RegisterRepositoryV
           fullName: selectedRepo.full_name,
           url: selectedRepo.html_url,
           description: selectedRepo.description,
+          stargazersCount: selectedRepo.stargazers_count, 
         }),
       })
+
 
       if (!response.ok) {
         const errorData = await response.json()
@@ -186,14 +191,14 @@ export default function RegisterRepositoryView({ onCancel }: RegisterRepositoryV
              <div className="bg-background rounded-md p-4 border border-brand-border mb-6">
                 <div className="flex justify-between text-sm mb-2">
                     <span className="text-brand-muted">Registration Fee</span>
-                    <span className="text-brand-text">50</span>
+                    <span className="text-brand-text">{REPOSITORY_REGISTRATION_COST}</span>
                 </div>
                 <div className="border-t border-brand-border my-2"></div>
                 <div className="flex justify-between font-bold">
                     <span className="text-brand-text">Total Cost</span>
                     <span className="text-[#e3b341] flex items-center gap-1">
                         <Zap className="w-3 h-3" />
-                        50
+                        {REPOSITORY_REGISTRATION_COST}
                     </span>
                 </div>
                 <div className="text-xs text-right mt-2 text-brand-muted">
@@ -210,7 +215,7 @@ export default function RegisterRepositoryView({ onCancel }: RegisterRepositoryV
               </button>
               <button
                 onClick={handleRegister}
-                disabled={!!registering || userKarma < 50}
+                disabled={!!registering || userKarma < REPOSITORY_REGISTRATION_COST}
                 className="bg-brand-success hover:bg-brand-success/80 text-white px-6 py-2 rounded-md font-bold text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >
                 {registering === selectedRepo.id ? (
@@ -221,7 +226,7 @@ export default function RegisterRepositoryView({ onCancel }: RegisterRepositoryV
                 ) : (
                   <>
                     <Plus className="w-4 h-4" />
-                    Pay 50 Karma & Register
+                    Pay {REPOSITORY_REGISTRATION_COST} Karma & Register
                   </>
                 )}
               </button>

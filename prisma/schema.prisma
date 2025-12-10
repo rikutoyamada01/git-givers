@@ -24,6 +24,8 @@ model User {
  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  
+  boosts    Boost[]
 }
 
 model Account {
@@ -68,6 +70,7 @@ model Repository {
   fullName    String
   url         String
   description String?
+  stargazersCount Int @default(0)
 
   registeredById String
   registeredBy   User     @relation("RegisteredRepositories", fields: [registeredById], references: [id], onDelete: Cascade)
@@ -110,4 +113,19 @@ model Issue {
   
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  boosts      Boost[]
+}
+
+model Boost {
+  id        String   @id @default(cuid())
+  amount    Int
+  
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  issueId   String
+  issue     Issue    @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
 }

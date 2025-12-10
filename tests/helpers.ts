@@ -24,6 +24,7 @@ export const mockPrismaRepository = (overrides?: Partial<Repository> & Record<st
     fullName: "testuser/test-repo",
     url: "https://github.com/testuser/test-repo",
     description: "A test repository",
+    stargazersCount: 0,
     registeredById: "testUserId",
     createdAt: new Date(),
     updatedAt: new Date(),
