@@ -24,34 +24,27 @@ interface RegisterRepositoryViewProps {
   onCancel: () => void
 }
 
+
+import { useUserKarma } from "@/hooks/useUserKarma"
+
+// ... imports
+
 export default function RegisterRepositoryView({ onCancel }: RegisterRepositoryViewProps) {
   const { data: session, status, update } = useSession()
+  const { user, mutate: mutateUser } = useUserKarma() // Use SWR hook
   const [repos, setRepos] = useState<GitHubRepo[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [registering, setRegistering] = useState<number | null>(null)
   const [selectedRepo, setSelectedRepo] = useState<GitHubRepo | null>(null)
-  const [userKarma, setUserKarma] = useState<number>(0)
+  
+  // Derived state from SWR
+  const userKarma = user?.karma || 0;
 
-  // Fetch user karma
-  useEffect(() => {
-    async function fetchUserKarma() {
-      if (status === "authenticated") {
-        try {
-          const response = await fetch("/api/users")
-          if (response.ok) {
-            const data = await response.json()
-            setUserKarma(data.karma)
-          }
-        } catch (error) {
-          console.error("Failed to fetch user karma", error)
-        }
-      }
-    }
-    fetchUserKarma()
-  }, [status])
+  // Manual fetch of User Karma REMOVED in favor of SWR
 
-  // Fetch GitHub repos
+
+  // Fetch GitHub repos and Registered repos
   useEffect(() => {
     async function fetchRepos() {
       if (status === "authenticated") {
@@ -60,18 +53,32 @@ export default function RegisterRepositoryView({ onCancel }: RegisterRepositoryV
         try {
           const accessToken = session?.user?.accessToken;
 
-          const response = await fetch("https://api.github.com/user/repos?type=owner&sort=updated&per_page=100", {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
-          })
+          const [githubResponse, registeredResponse] = await Promise.all([
+            fetch("https://api.github.com/user/repos?type=owner&sort=updated&per_page=100", {
+              headers: {
+                Authorization: `Bearer ${accessToken}`,
+              },
+            }),
+            fetch("/api/repositories")
+          ]);
 
-          if (!response.ok) {
+          if (!githubResponse.ok) {
             throw new Error("Failed to fetch repositories from GitHub")
           }
+          if (!registeredResponse.ok) {
+             console.warn("Failed to fetch registered repositories, skipping filter")
+          }
 
-          const data = await response.json()
-          setRepos(data)
+          const githubData = await githubResponse.json()
+          let filteredData = githubData;
+
+          if (registeredResponse.ok) {
+            const registeredData = await registeredResponse.json();
+            const registeredIds = new Set(registeredData.map((r: { githubId: number }) => r.githubId));
+            filteredData = githubData.filter((repo: GitHubRepo) => !registeredIds.has(repo.id));
+          }
+
+          setRepos(filteredData)
         } catch (err: unknown) {
           setError(err instanceof Error ? err.message : "An unknown error occurred")
         } finally {
@@ -120,7 +127,8 @@ export default function RegisterRepositoryView({ onCancel }: RegisterRepositoryV
       }
 
       toast.success(`Successfully registered ${selectedRepo.full_name}!`)
-      await update() // Update session to reflect karma change
+      await update() // Update session
+      await mutateUser() // Refresh SWR cache globally
       onCancel() // Go back to feed
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : "Failed to register repository")

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Search, Inbox, Zap, GitPullRequest } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
@@ -18,45 +18,32 @@ import { Issue, LegacyIssue, DashboardView } from '../../../components/dashboard
 import RegisterRepositoryView from '../../../components/dashboard/views/RegisterRepositoryView';
 import { LoadingState } from '@/components/ui/loading-state';
 
+
+import { useUserKarma } from '@/hooks/useUserKarma';
+
+// ... (other imports)
+
+
+import { useIssues } from '@/hooks/useIssues';
+
+// ... (other imports)
+
 const Dashboard: React.FC = () => {
   const router = useRouter();
   const [activeIssue, setActiveIssue] = useState<Issue | LegacyIssue | null>(null);
-  const [user, setUser] = useState<{ karma: number, name?: string, image?: string } | null>(null);
   
-  // Changed from repositories to issues for Phase 1
-  const [issues, setIssues] = useState<Issue[]>([]); 
+  // Use SWR Hooks
+  const { user, mutate: mutateUser } = useUserKarma();
+  const { issues, mutate: mutateIssues, isLoading: issuesLoading } = useIssues();
+  
   const [view, setView] = useState<DashboardView>('feed');
   const [searchQuery, setSearchQuery] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
+  // const [isLoading, setIsLoading] = useState(true); // Replaced by SWR loading state
 
   // Swipe State
   const [currentIssueIndex, setCurrentIssueIndex] = useState(0);
 
-  // Fetch initial data
-  useEffect(() => {
-    async function initData() {
-        try {
-            const [userRes, issuesRes] = await Promise.all([
-                fetch('/api/users'),
-                fetch('/api/issues')
-            ]);
-            
-            if (userRes.ok) {
-                const userData = await userRes.json();
-                setUser(userData);
-            }
-            if (issuesRes.ok) {
-                const issuesData = await issuesRes.json();
-                setIssues(issuesData);
-            }
-        } catch (error) {
-            console.error("Failed to load dashboard data", error);
-        } finally {
-            setIsLoading(false);
-        }
-    }
-    initData();
-  }, []);
+  // Initial Data Fetch removed - controlled by SWR now
 
   const handleNext = () => {
     if (issues.length > 0) {
@@ -64,12 +51,20 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  const handlePublishRequest = (amount: number) => {
+
+  const handlePublishRequest = async (amount: number) => {
     if (user) {
-        setUser({ ...user, karma: user.karma - Math.floor(amount * 1.05) });
+        // Optimistic Update
+        const optimisticKarma = user.karma - Math.floor(amount * 1.05);
+        await mutateUser({ ...user, karma: optimisticKarma }, { revalidate: false });
+        
+        // Trigger revalidation in background to ensure sync
+        mutateUser();
+        mutateIssues(); // Refresh issues list to show the new request
     }
     setView('my-requests');
   };
+
 
   const handleNavigate = (page: string) => {
       if (page === 'home') {
@@ -89,7 +84,8 @@ const Dashboard: React.FC = () => {
   };
 
   const renderContent = () => {
-      if (isLoading && !user) return <LoadingState text="Loading dashboard..." />;
+      // Wait for both User and Issues
+      if ((!user && !issues) || issuesLoading) return <LoadingState text="Loading dashboard..." />;
 
       switch (view) {
           case 'create':
