@@ -1,3 +1,5 @@
+import { SessionGuard } from "@/components/auth/SessionGuard";
+
 export default function DashboardLayout({
   children,
 }: {
@@ -5,6 +7,7 @@ export default function DashboardLayout({
 }) {
   return (
     <>
+      <SessionGuard />
       {children}
     </>
   );

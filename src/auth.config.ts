@@ -4,6 +4,7 @@ import GitHub from "next-auth/providers/github"
 export const authConfig = {
   pages: {
     signIn: '/login',
+    signOut: '/signout',
   },
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {

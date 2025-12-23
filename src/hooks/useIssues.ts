@@ -1,7 +1,6 @@
 import useSWR from 'swr';
 import { Issue } from '@/components/dashboard/types';
-
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
+import { fetcher } from '@/lib/fetcher';
 
 export function useIssues() {
     const { data, error, mutate, isLoading } = useSWR<Issue[]>('/api/issues', fetcher, {

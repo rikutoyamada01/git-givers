@@ -5,7 +5,7 @@ export default defineConfig({
   schema: "prisma/schema.prisma",
   migrations: {
     path: "prisma/migrations",
-    seed: "tsx prisma/seed.ts", // シードデータの作成
+    seed: "node prisma/seed.js", // シードデータの作成
   },
   datasource: {
     // マイグレーション時は直接接続(DIRECT_URL)、それ以外(アプリ実行時)はプーリング接続(DATABASE_URL)を使用

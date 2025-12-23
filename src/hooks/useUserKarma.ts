@@ -1,6 +1,5 @@
 import useSWR from 'swr';
-
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
+import { fetcher } from '@/lib/fetcher';
 
 export interface UserData {
     id: string;
@@ -14,6 +13,9 @@ export function useUserKarma() {
         revalidateOnFocus: true,
         revalidateOnReconnect: true,
     });
+
+    // Zombie Session handling is now managed by <SessionGuard /> in the layout.
+    // We strictly return the error state here so the guard can react to it.
 
     return {
         user: data,
