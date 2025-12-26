@@ -1,14 +1,14 @@
 
 import prisma from "@/lib/prisma"
 import { NextRequest, NextResponse } from "next/server"
+import { Prisma } from "@prisma/client"
 
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url)
     const repositoryId = searchParams.get('repositoryId')
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const whereClause: any = {
+    const whereClause: Prisma.IssueWhereInput = {
       state: 'open', // Always filter by open issues for now
     }
     
