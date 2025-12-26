@@ -24,7 +24,7 @@ import { useUserKarma } from '@/hooks/useUserKarma';
 // ... (other imports)
 
 
-import { useIssues } from '@/hooks/useIssues';
+import { useIssuesQuery } from '@/hooks/useIssuesQuery';
 
 // ... (other imports)
 
@@ -34,7 +34,7 @@ const Dashboard: React.FC = () => {
   
   // Use SWR Hooks
   const { user, mutate: mutateUser } = useUserKarma();
-  const { issues, mutate: mutateIssues, isLoading: issuesLoading } = useIssues();
+  const { issues, mutate: mutateIssues, isLoading: issuesLoading } = useIssuesQuery();
   
   const [view, setView] = useState<DashboardView>('feed');
   const [searchQuery, setSearchQuery] = useState('');
@@ -52,17 +52,51 @@ const Dashboard: React.FC = () => {
   };
 
 
-  const handlePublishRequest = async (amount: number) => {
+  const handlePublishRequest = async (amount: number, issueId: string) => {
     if (user) {
-        // Optimistic Update
+        // 1. Optimistic Update (Immediate Feedback)
+        const previousUserData = user;
         const optimisticKarma = user.karma - Math.floor(amount * 1.05);
+
+        // Optimistically update cache
         await mutateUser({ ...user, karma: optimisticKarma }, { revalidate: false });
         
-        // Trigger revalidation in background to ensure sync
-        mutateUser();
-        mutateIssues(); // Refresh issues list to show the new request
+        try {
+            // 2. Perform Server Action
+            const response = await fetch('/api/boost', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ issueId, amount }),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to publish request');
+            }
+
+            // 3. Success: Revalidate to ensure sync with server (e.g. Transaction history)
+            mutateUser(); // Revalidate User (Karma)
+            mutateIssues(); // Revalidate Issues (Available issues might change?)
+            
+            // Show new view
+            setView('my-requests');
+
+        } catch (error) {
+            console.error("Publish failed:", error);
+            // 4. Rollback on Error
+            // We revert the cache to the previous state
+            await mutateUser(previousUserData, { revalidate: false });
+             
+            // Revalidate to be absolutely sure
+            mutateUser();
+            
+            // Show error to user (assuming toast is available here, if not just console)
+            // Ideally we'd import toast from react-hot-toast
+            alert(`Failed to publish request: ${error instanceof Error ? error.message : "Unknown error"}`);
+        }
+    } else {
+        setView('my-requests');
     }
-    setView('my-requests');
   };
 
 

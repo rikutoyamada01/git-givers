@@ -65,6 +65,29 @@ describe("API /api/boost", () => {
     expect(response.status).toBe(403)
   })
 
+  it("should return 403 if user does not own the repository", async () => {
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({
+        id: "user_1",
+        karma: 100,
+    } as any)
+    
+    vi.mocked(prisma.issue.findUnique).mockResolvedValue({
+        id: "issue_1",
+        state: "open",
+        repository: {
+            registeredById: "other_user" // Different user
+        }
+    } as any)
+    
+    const request = new NextRequest("http://localhost/api/boost", {
+        method: "POST",
+        body: JSON.stringify({ issueId: "issue_1", amount: 50 }),
+    })
+    
+    const response = await POST(request)
+    expect(response.status).toBe(403)
+  })
+
   it("should process boost if valid", async () => {
     vi.mocked(prisma.user.findUnique).mockResolvedValue({
         id: "user_1",
@@ -76,6 +99,9 @@ describe("API /api/boost", () => {
         number: 1,
         state: "open",
         repositoryId: "repo_1",
+        repository: {
+            registeredById: "user_1"
+        }
     } as any)
     
     vi.mocked(prisma.boost.create).mockResolvedValue({

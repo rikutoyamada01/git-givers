@@ -3,6 +3,21 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import RegisterRepositoryView from '@/components/dashboard/views/RegisterRepositoryView' // Default export
 import { useSession } from 'next-auth/react'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+
+const createWrapper = () => {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+      },
+    },
+  })
+  // eslint-disable-next-line react/display-name
+  return ({ children }: { children: React.ReactNode }) => (
+    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+  )
+}
 
 // Mock toast
 vi.mock('react-hot-toast', () => ({
@@ -92,7 +107,7 @@ describe('RegisterRepositoryView', () => {
       return Promise.reject(new Error(`Unhandled fetch: ${url}`))
     })
 
-    render(<RegisterRepositoryView onCancel={mockOnCancel} />)
+    render(<RegisterRepositoryView onCancel={mockOnCancel} />, { wrapper: createWrapper() })
 
     // Wait for loading to finish
     await waitFor(() => {
@@ -140,7 +155,7 @@ describe('RegisterRepositoryView', () => {
         return Promise.reject(new Error(`Unhandled fetch: ${url}`))
       })
   
-      render(<RegisterRepositoryView onCancel={mockOnCancel} />)
+      render(<RegisterRepositoryView onCancel={mockOnCancel} />, { wrapper: createWrapper() })
   
       await waitFor(() => {
           expect(screen.queryByText('Loading repositories...')).not.toBeInTheDocument()

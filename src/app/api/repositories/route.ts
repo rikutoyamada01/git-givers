@@ -82,6 +82,19 @@ export async function POST(req: NextRequest) {
       return newRepository
     })
 
+    // 4. Auto-Sync Issues (Outside of transaction to avoid blocking DB if it takes long)
+    // We swallow errors here because the registration itself was successful.
+    // The user can manually sync later if this fails.
+    if (session.user.accessToken) {
+        try {
+            const { syncRepositoryIssues } = await import("@/lib/github-sync");
+            await syncRepositoryIssues(result.id, session.user.accessToken);
+            console.log(`Auto-synced issues for newly registered repo: ${fullName}`);
+        } catch (syncError) {
+            console.error(`Auto-sync failed for ${fullName}:`, syncError);
+        }
+    }
+
     return NextResponse.json(result, { status: 201 })
   } catch (error) {
     console.error("Error registering repository:", error)
@@ -89,7 +102,7 @@ export async function POST(req: NextRequest) {
   }
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   const session = await auth()
 
   if (!session?.user?.id) {
@@ -97,7 +110,17 @@ export async function GET() {
   }
 
   try {
+    const { searchParams } = new URL(req.url)
+    const owned = searchParams.get('owned') === 'true'
+    const viewer = searchParams.get('viewer') === 'true'
+
+    const whereClause: { registeredById?: string } = {}
+    if (owned || viewer) {
+        whereClause.registeredById = session.user.id
+    }
+
     const repositories = await prisma.repository.findMany({
+      where: whereClause,
       include: {
         registeredBy: {
           select: {

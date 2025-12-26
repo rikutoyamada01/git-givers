@@ -31,6 +31,8 @@
     "@prisma/adapter-pg": "^7.0.1",
     "@prisma/client": "^7.2.0",
     "@prisma/config": "^7.0.1",
+    "@tanstack/react-query": "^5.90.12",
+    "@tanstack/react-query-devtools": "^5.91.1",
     "clsx": "^2.1.1",
     "dotenv": "^17.2.3",
     "lucide-react": "^0.555.0",
@@ -42,7 +44,6 @@
     "react": "19.2.0",
     "react-dom": "19.2.0",
     "react-hot-toast": "^2.6.0",
-    "swr": "^2.3.8",
     "tailwind-merge": "^3.4.0",
     "zod": "^4.1.13"
   },

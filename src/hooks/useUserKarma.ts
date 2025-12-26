@@ -1,5 +1,5 @@
-import useSWR from 'swr';
-import { fetcher } from '@/lib/fetcher';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { fetcher, HttpError } from '@/lib/fetcher';
 
 export interface UserData {
     id: string;
@@ -9,13 +9,35 @@ export interface UserData {
 }
 
 export function useUserKarma() {
-    const { data, error, mutate, isLoading } = useSWR<UserData>('/api/users', fetcher, {
-        revalidateOnFocus: true,
-        revalidateOnReconnect: true,
+    const queryClient = useQueryClient();
+    const queryKey = ['user', 'karma'];
+
+     
+    const { data, error, isLoading } = useQuery<UserData, HttpError>({
+        queryKey,
+        queryFn: () => fetcher('/api/users'),
+        // SWR behavior mapping:
+        // revalidateOnFocus: true (default)
+        // revalidateOnReconnect: true (default)
     });
 
-    // Zombie Session handling is now managed by <SessionGuard /> in the layout.
-    // We strictly return the error state here so the guard can react to it.
+    // Emulate SWR's mutate function
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const mutate = async (newData?: any, options?: any) => {
+        if (newData !== undefined) {
+            // Optimistic update
+            queryClient.setQueryData(queryKey, newData);
+            
+            // If revalidation is not explicitly disabled, or if it is requested
+            if (options?.revalidate !== false) {
+                 await queryClient.invalidateQueries({ queryKey });
+            }
+            return newData;
+        } else {
+            // Just revalidate
+            return queryClient.invalidateQueries({ queryKey });
+        }
+    };
 
     return {
         user: data,

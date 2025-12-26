@@ -181,7 +181,7 @@ describe("API /api/repositories", () => {
       vi.mocked(auth as unknown as () => Promise<Session | null>).mockResolvedValue(null)
 
 
-      const response = await GET()
+      const response = await GET({ url: "http://localhost/api/repositories" } as any)
 
       expect(response.status).toBe(401)
       await expect(response.json()).resolves.toEqual({ message: "Unauthorized" })
@@ -208,7 +208,7 @@ describe("API /api/repositories", () => {
       vi.mocked(prisma.repository.findMany).mockResolvedValue(mockRepositories)
 
 
-      const response = await GET()
+      const response = await GET({ url: "http://localhost/api/repositories" } as any)
 
       expect(response.status).toBe(200)
       await expect(response.json()).resolves.toEqual(
@@ -228,7 +228,7 @@ describe("API /api/repositories", () => {
       vi.mocked(prisma.repository.findMany).mockRejectedValue(new Error("Database error"))
 
 
-      const response = await GET()
+      const response = await GET({ url: "http://localhost/api/repositories" } as any)
 
       expect(response.status).toBe(500)
       await expect(response.json()).resolves.toEqual({ message: "Internal server error" })

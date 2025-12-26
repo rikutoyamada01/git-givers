@@ -1,25 +1,46 @@
 
 import React, { useState } from 'react';
 import { X, Book, Check, CircleDot, Zap, Loader, Plus, Filter, User } from 'lucide-react';
-import { MY_REPOS, MY_REPO_ISSUES, MOCK_MY_REQUESTS } from '../mockData';
+import { MOCK_MY_REQUESTS } from '../mockData';
 import { useNotImplemented } from '@/hooks/useNotImplemented';
 import { NotImplementedDialog } from '@/components/ui/NotImplementedDialog';
+import { useRepositoriesQuery } from '@/hooks/useRepositoriesQuery';
+import { useIssuesQuery } from '@/hooks/useIssuesQuery';
 
-export const CreateRequestView = ({ onPublish, onCancel }: { onPublish: (amount: number) => void, onCancel: () => void }) => {
+export const CreateRequestView = ({ onPublish, onCancel }: { onPublish: (amount: number, issueId: string) => void, onCancel: () => void }) => {
     const [step, setStep] = useState(1);
-    const [selectedRepo, setSelectedRepo] = useState<string | null>(null);
-    const [selectedIssue, setSelectedIssue] = useState<number | null>(null);
+    // Use repository ID (string) instead of name for robust linking
+    const [selectedRepoId, setSelectedRepoId] = useState<string | null>(null);
+    const [selectedIssueId, setSelectedIssueId] = useState<string | null>(null);
     const [karmaAmount, setKarmaAmount] = useState<number>(100);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    // Fetch Real Data - Step 1: Get MY repositories
+    const { repositories, isLoading: reposLoading } = useRepositoriesQuery({ viewer: true });
+    
+    // Fetch Real Data - Step 2: Get Issues for SELECTED repository (Dependent Query)
+    // We only fetch when selectedRepoId is set.
+    const { issues, isLoading: issuesLoading } = useIssuesQuery({ 
+        repositoryId: selectedRepoId || undefined 
+    });
+
+    // Derived State
+    const selectedRepo = repositories.find((r) => r.id === selectedRepoId);
+    // Since 'issues' is now already filtered by the API for this repo, we don't need to filter by repoId again on client
+    const filteredIssues = issues; 
+    const selectedIssue = issues.find((i) => i.id === selectedIssueId);
+
     const handleSubmit = () => {
-        if(!selectedRepo || !selectedIssue) return;
+        if(!selectedRepoId || !selectedIssueId) return;
         setIsSubmitting(true);
+        // Simulate delay is fine, or we can just call onPublish immediately
         setTimeout(() => {
             setIsSubmitting(false);
-            onPublish(karmaAmount);
-        }, 2000);
+            onPublish(karmaAmount, selectedIssueId);
+        }, 1000);
     };
+
+    if (reposLoading) return <div className="p-8 text-center text-brand-muted"><Loader className="w-6 h-6 animate-spin mx-auto mb-2"/>Loading repositories...</div>;
 
     return (
         <div className="bg-brand-panel border border-brand-border rounded-md overflow-hidden">
@@ -50,26 +71,31 @@ export const CreateRequestView = ({ onPublish, onCancel }: { onPublish: (amount:
                 {step === 1 && (
                     <div className="space-y-4">
                         <label className="block text-sm font-semibold text-brand-text">Select a Repository</label>
-                        <div className="space-y-2">
-                            {MY_REPOS.map(repo => (
-                                <div 
-                                    key={repo.name}
-                                    onClick={() => setSelectedRepo(repo.name)}
-                                    className={`p-3 rounded-md border cursor-pointer flex items-center justify-between group transition-colors ${selectedRepo === repo.name ? 'border-brand-accent bg-brand-accent/10' : 'border-brand-border hover:border-brand-muted'}`}
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <Book className="w-4 h-4 text-brand-muted" />
-                                        <span className="text-brand-text font-medium">{repo.name}</span>
-                                        {repo.private && <span className="text-xs border border-brand-border px-1.5 rounded-full text-brand-muted">Private</span>}
-                                    </div>
-                                    {selectedRepo === repo.name && <Check className="w-4 h-4 text-brand-accent" />}
+                        <div className="space-y-2 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                            {repositories.length === 0 ? (
+                                <div className="text-sm text-brand-muted italic p-2 border border-brand-border border-dashed rounded text-center">
+                                    No repositories registered yet.
                                 </div>
-                            ))}
+                            ) : (
+                                repositories.map(repo => (
+                                    <div 
+                                        key={repo.id}
+                                        onClick={() => setSelectedRepoId(repo.id)}
+                                        className={`p-3 rounded-md border cursor-pointer flex items-center justify-between group transition-colors ${selectedRepoId === repo.id ? 'border-brand-accent bg-brand-accent/10' : 'border-brand-border hover:border-brand-muted'}`}
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <Book className="w-4 h-4 text-brand-muted" />
+                                            <span className="text-brand-text font-medium">{repo.name}</span>
+                                        </div>
+                                        {selectedRepoId === repo.id && <Check className="w-4 h-4 text-brand-accent" />}
+                                    </div>
+                                ))
+                            )}
                         </div>
                         <div className="flex justify-end pt-4">
                             <button 
                                 onClick={() => setStep(2)} 
-                                disabled={!selectedRepo}
+                                disabled={!selectedRepoId}
                                 className="bg-brand-success hover:bg-brand-success/80 text-white px-4 py-2 rounded-md font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 Next: Select Issue
@@ -80,39 +106,42 @@ export const CreateRequestView = ({ onPublish, onCancel }: { onPublish: (amount:
 
                 {step === 2 && (
                     <div className="space-y-4">
-                        <label className="block text-sm font-semibold text-brand-text">Select an Issue to Boost</label>
+                        <label className="block text-sm font-semibold text-brand-text">Select an Issue to Boost from {selectedRepo?.name}</label>
                         <div className="space-y-2 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
-                            {MY_REPO_ISSUES.map(issue => (
-                                <div 
-                                    key={issue.id}
-                                    onClick={() => setSelectedIssue(issue.id)}
-                                    className={`p-3 rounded-md border cursor-pointer group transition-colors ${selectedIssue === issue.id ? 'border-brand-accent bg-brand-accent/10' : 'border-brand-border hover:border-brand-muted'}`}
-                                >
-                                    <div className="flex items-start gap-3">
-                                        <CircleDot className="w-4 h-4 text-brand-success mt-1 shrink-0" />
-                                        <div className="flex-1">
-                                            <div className="flex justify-between">
-                                                <span className="text-brand-text font-medium leading-snug">{issue.title}</span>
-                                                <span className="text-xs text-brand-muted">#{issue.number}</span>
-                                            </div>
-                                            <div className="flex gap-2 mt-2">
-                                                {issue.labels.map(label => (
-                                                    <span key={label.name} className="px-2 py-0.5 rounded-full text-[10px] font-medium text-black" style={{ backgroundColor: `#${label.color}`}}>
-                                                        {label.name}
-                                                    </span>
-                                                ))}
-                                                <span className="text-xs text-brand-muted">{issue.created_at}</span>
+                            {issuesLoading ? (
+                                <div className="text-center py-4"><Loader className="w-4 h-4 animate-spin mx-auto"/></div>
+                            ) : filteredIssues.length === 0 ? (
+                                <div className="text-sm text-brand-muted italic p-2 border border-brand-border border-dashed rounded text-center">
+                                    No open issues found in this repository.
+                                </div>
+                            ) : (
+                                filteredIssues.map(issue => (
+                                    <div 
+                                        key={issue.id}
+                                        onClick={() => setSelectedIssueId(issue.id)}
+                                        className={`p-3 rounded-md border cursor-pointer group transition-colors ${selectedIssueId === issue.id ? 'border-brand-accent bg-brand-accent/10' : 'border-brand-border hover:border-brand-muted'}`}
+                                    >
+                                        <div className="flex items-start gap-3">
+                                            <CircleDot className="w-4 h-4 text-brand-success mt-1 shrink-0" />
+                                            <div className="flex-1">
+                                                <div className="flex justify-between">
+                                                    <span className="text-brand-text font-medium leading-snug">{issue.title}</span>
+                                                    <span className="text-xs text-brand-muted">#{issue.number}</span>
+                                                </div>
+                                                <div className="flex gap-2 mt-2">
+                                                    <span className="text-xs text-brand-muted">Created: {new Date(issue.createdAt).toLocaleDateString()}</span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                            ))}
+                                ))
+                            )}
                         </div>
                         <div className="flex justify-between pt-4">
                             <button onClick={() => setStep(1)} className="text-brand-accent text-sm hover:underline">Back</button>
                             <button 
                                 onClick={() => setStep(3)} 
-                                disabled={!selectedIssue}
+                                disabled={!selectedIssueId}
                                 className="bg-brand-success hover:bg-brand-success/80 text-white px-4 py-2 rounded-md font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 Next: Set Bounty
@@ -159,6 +188,9 @@ export const CreateRequestView = ({ onPublish, onCancel }: { onPublish: (amount:
                                     <Zap className="w-3 h-3" />
                                     {Math.floor(karmaAmount * 1.05)}
                                 </span>
+                            </div>
+                            <div className="mt-2 text-xs text-brand-muted text-right">
+                                Boosting Issue: <span className="font-semibold text-brand-text">#{selectedIssue?.number} {selectedIssue?.title}</span>
                             </div>
                         </div>
 

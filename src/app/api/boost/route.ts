@@ -33,9 +33,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 2. Check if Issue exists and is Open
+    // 2. Check if Issue exists, is Open, AND belongs to a repository owned by the user
     const issue = await prisma.issue.findUnique({
       where: { id: issueId },
+      include: { repository: true },
     });
 
     if (!issue) {
@@ -50,6 +51,14 @@ export async function POST(req: NextRequest) {
         { message: "Cannot boost a closed issue" },
         { status: 400 }
       );
+    }
+
+    // Ownership Check: Ensure the user owns the repository
+    if (issue.repository.registeredById !== session.user.id) {
+        return NextResponse.json(
+            { message: "You can only boost issues in your own repositories" },
+            { status: 403 }
+        );
     }
 
     // 3. Execute Transaction (Deduct Karma, Create Boost, Create Transaction Record)
