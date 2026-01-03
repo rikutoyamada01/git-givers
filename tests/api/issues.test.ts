@@ -104,9 +104,9 @@ describe("API /api/issues", () => {
 
       // Mock GitHub API response
       const mockGithubIssues = [
-          { id: 101, number: 1, title: "Issue 1", body: "Body 1", state: "open", html_url: "url1", updated_at: "2023-01-01T00:00:00Z" },
-          { id: 102, number: 2, title: "Issue 2", body: null, state: "open", html_url: "url2", updated_at: "2023-01-02T00:00:00Z" },
-          { id: 103, number: 3, title: "PR 1", body: "PR Body", state: "open", html_url: "url3", updated_at: "2023-01-03T00:00:00Z", pull_request: {} } // Should be skipped
+          { id: 101, number: 1, title: "Issue 1", body: "Body 1", state: "open", html_url: "url1", updated_at: "2023-01-01T00:00:00Z", user: { id: 1, login: "user1" } },
+          { id: 102, number: 2, title: "Issue 2", body: null, state: "open", html_url: "url2", updated_at: "2023-01-02T00:00:00Z", user: { id: 2, login: "user2" } },
+          { id: 103, number: 3, title: "PR 1", body: "PR Body", state: "open", html_url: "url3", updated_at: "2023-01-03T00:00:00Z", pull_request: {}, user: { id: 3, login: "user3" } } // Should be skipped
       ]
       
       vi.mocked(fetch).mockResolvedValue({

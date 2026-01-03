@@ -64,6 +64,7 @@ describe('syncRepositoryIssues', () => {
         state: 'open',
         html_url: 'http://github.com/owner/repo/issues/101',
         updated_at: '2023-01-01T00:00:00Z',
+        user: { id: 1001, login: 'issue-author' },
       },
       {
         id: 2,
@@ -71,6 +72,7 @@ describe('syncRepositoryIssues', () => {
         title: 'PR 1',
         pull_request: {},
         updated_at: '2023-01-01T00:00:00Z',
+        user: { id: 1002, login: 'pr-author' },
       }
     ];
 
@@ -97,7 +99,12 @@ describe('syncRepositoryIssues', () => {
     expect(prisma.issue.upsert).toHaveBeenCalledTimes(1);
     expect(prisma.issue.upsert).toHaveBeenCalledWith(expect.objectContaining({
         where: { githubId: 1 },
-        create: expect.objectContaining({ number: 101, repositoryId: mockRepoId }),
+        create: expect.objectContaining({ 
+            number: 101, 
+            repositoryId: mockRepoId,
+            authorGithubId: 1001,
+            authorLogin: 'issue-author'
+        }),
     }));
   });
 });

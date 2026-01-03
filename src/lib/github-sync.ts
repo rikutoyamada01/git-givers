@@ -9,6 +9,10 @@ interface GitHubIssue {
   html_url: string;
   updated_at: string;
   pull_request?: unknown;
+  user: {
+    id: number;
+    login: string;
+  }
 }
 
 export async function syncRepositoryIssues(repositoryId: string, accessToken: string): Promise<number> {
@@ -49,6 +53,8 @@ export async function syncRepositoryIssues(repositoryId: string, accessToken: st
                 state: issue.state,
                 updatedAt: new Date(issue.updated_at),
                 repositoryId: repository.id,
+                authorGithubId: issue.user.id,
+                authorLogin: issue.user.login,
             },
             create: {
                 githubId: issue.id,
@@ -59,6 +65,8 @@ export async function syncRepositoryIssues(repositoryId: string, accessToken: st
                 htmlUrl: issue.html_url,
                 repositoryId: repository.id,
                 updatedAt: new Date(issue.updated_at),
+                authorGithubId: issue.user.id,
+                authorLogin: issue.user.login,
             }
         })
     }))

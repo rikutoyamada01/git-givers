@@ -13,7 +13,7 @@ This document tracks the evolution of GitGivers from a simple MVP to a thriving 
 -   🔲 **Repo Sync Engine**:
     -   *Detail*: We need to fetch user repos via Octokit on login.
     -   *Why*: Users can't boost repos if we don't know they have them.
--   🔲 **Membership Logic**: The "Unlock" fee (500 Karma) to prevent abuse.
+-   🔲 **Repo Register and Boost Logic**: The "Register" fee (500 Karma) to prevent abuse. You can only boost a issue which is already registered. You can register issue by comment `@gitgivers` in the issue. 
 -   🔲 **GitHub App Bot**: The core. Webhook handler for `pull_request.closed`.
 
 ## 5.2 Phase 2: Engagement (Gamification)

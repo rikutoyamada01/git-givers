@@ -107,6 +107,10 @@ model Issue {
   repositoryId String
   repository   Repository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
   
+  // Anti-Gaming: Track who created the issue on GitHub
+  authorGithubId Int?
+  authorLogin    String?
+
   assigneeId   String?
   // We can add relation to User if we want to track assignee within our system
   // assignee     User?   @relation(fields: [assigneeId], references: [id])

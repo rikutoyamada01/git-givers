@@ -68,6 +68,7 @@ export async function POST(req: NextRequest) {
 }
 
 // Exported for testing
+ 
 export async function handleMergedPR(pr: any, repo: any, sender: any) {
   console.log(`Processing merged PR #${pr.number} in ${repo.full_name}`);
   // ... (rest of logic)
@@ -105,37 +106,37 @@ export async function handleMergedPR(pr: any, repo: any, sender: any) {
       return NextResponse.json({ message: `Issue #${issueNumber} not monitored` }, { status: 200 });
   }
   
-  // 4. Calculate Logic
+  // 4. Identify Solver (PR Author)
+  // NOTE: 'sender' is the person who triggered the event (merged the PR), usually the maintainer.
+  // The 'solver' is the person who wrote the PR code (pr.user).
+  const solverGithubId: number = pr.user.id;
+  
   const solverAccount = await prisma.account.findFirst({
     where: {
       provider: "github",
-      providerAccountId: String(sender.id),
+      providerAccountId: String(solverGithubId),
     },
     include: { user: true },
   });
   
   if (!solverAccount || !solverAccount.user) {
-      console.log(`Solver ${sender.login} is not a GitGivers user.`);
+      console.log(`Solver (PR Author: ${pr.user.login}) is not a GitGivers user.`);
       return NextResponse.json({ message: "Solver is not a registered user" }, { status: 200 });
   }
   
   const solver = solverAccount.user;
 
-  // Validation
-  // const validation = validateIssuePayout({
-  //     issueAuthorId: "unknown", // TODO: Store author ID in Issue model
-  //     assigneeId: solver.id,
-  //     repoOwnerId: registeredRepo.registeredById,
-  // });
-   validateIssuePayout({
-       issueAuthorId: "unknown", 
-      assigneeId: solver.id,
-       repoOwnerId: registeredRepo.registeredById,
-   });
-  
+  // Validation: Anti-Gaming
+  // 1. Solver cannot be the Issue Author (Self-Dealing)
+  if (issue.authorGithubId && issue.authorGithubId === solverGithubId) {
+       console.log("Anti-Gaming: Solver is Issue Author. 0 Karma.");
+       return NextResponse.json({ message: "Payout skipped: Self-dealing (Solver is Issue Author)" }, { status: 200 });
+  }
+
+  // 2. Solver cannot be the Repo Owner (Self-Dealing)
   if (solver.id === registeredRepo.registeredById) {
        console.log("Anti-Gaming: Solver is Repo Owner. 0 Karma.");
-       return NextResponse.json({ message: "Payout skipped: Self-dealing" }, { status: 200 });
+       return NextResponse.json({ message: "Payout skipped: Self-dealing (Solver is Repo Owner)" }, { status: 200 });
   }
  
   // 5. Calculate Reward
