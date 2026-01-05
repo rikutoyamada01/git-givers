@@ -22,8 +22,7 @@ export function useUserKarma() {
     });
 
     // Emulate SWR's mutate function
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const mutate = async (newData?: any, options?: any) => {
+    const mutate = async (newData?: UserData, options?: { revalidate?: boolean }) => {
         if (newData !== undefined) {
             // Optimistic update
             queryClient.setQueryData(queryKey, newData);

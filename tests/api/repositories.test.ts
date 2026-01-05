@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { NextRequest } from "next/server"
 import { POST, GET } from "@/app/api/repositories/route"
@@ -120,9 +119,16 @@ describe("API /api/repositories", () => {
 
     it("should successfully register a new repository", async () => {
       vi.mocked(prisma.repository.findUnique).mockResolvedValue(null)
-      vi.mocked(prisma.user.findUnique).mockResolvedValue({ id: "testUserId", karma: 100 } as any)
-      vi.mocked(prisma.user.update).mockResolvedValue({ id: "testUserId", karma: 50 } as any)
-      vi.mocked(prisma.transaction.create).mockResolvedValue({ id: 1 } as any)
+      vi.mocked(prisma.user.findUnique).mockResolvedValue(mockPrismaUser({ id: "testUserId", karma: 100 }))
+      vi.mocked(prisma.user.update).mockResolvedValue(mockPrismaUser({ id: "testUserId", karma: 50 }))
+      vi.mocked(prisma.transaction.create).mockResolvedValue({ 
+        id: "transaction1", 
+        amount: -50, 
+        description: "REGISTRATION_FEE", 
+        userId: "testUserId", 
+        repositoryId: null,
+        createdAt: new Date() 
+      })
       
       // Octokit is globally mocked now
 
@@ -200,7 +206,7 @@ describe("API /api/repositories", () => {
       vi.mocked(auth as unknown as () => Promise<Session | null>).mockResolvedValue(null)
 
 
-      const response = await GET({ url: "http://localhost/api/repositories" } as any)
+      const response = await GET({ url: "http://localhost/api/repositories" } as NextRequest)
 
       expect(response.status).toBe(401)
       await expect(response.json()).resolves.toEqual({ message: "Unauthorized" })
@@ -227,7 +233,7 @@ describe("API /api/repositories", () => {
       vi.mocked(prisma.repository.findMany).mockResolvedValue(mockRepositories)
 
 
-      const response = await GET({ url: "http://localhost/api/repositories" } as any)
+      const response = await GET({ url: "http://localhost/api/repositories" } as NextRequest)
 
       expect(response.status).toBe(200)
       await expect(response.json()).resolves.toEqual(
@@ -247,7 +253,7 @@ describe("API /api/repositories", () => {
       vi.mocked(prisma.repository.findMany).mockRejectedValue(new Error("Database error"))
 
 
-      const response = await GET({ url: "http://localhost/api/repositories" } as any)
+      const response = await GET({ url: "http://localhost/api/repositories" } as NextRequest)
 
       expect(response.status).toBe(500)
       await expect(response.json()).resolves.toEqual({ message: "Internal server error" })

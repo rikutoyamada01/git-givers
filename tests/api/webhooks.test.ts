@@ -57,10 +57,6 @@ describe('handleMergedPR', () => {
     merged: true,
   };
 
-  const mockSender = { // Trigger-er (Merger)
-      id: 99999,
-      login: 'maintainer-user',
-  };
 
   const mockIssue = {
     id: 'issue-1',
@@ -84,7 +80,7 @@ describe('handleMergedPR', () => {
     vi.mocked(prisma.issue.findFirst).mockResolvedValue(mockIssue as any);
     vi.mocked(prisma.account.findFirst).mockResolvedValue(mockSolverAccount as any);
 
-    const response = await handleMergedPR(mockPullRequest, { ...mockRepo, id: 100 }, mockSender); // GitHub Repo ID is number usually, but here we mock
+    const response = await handleMergedPR(mockPullRequest, { ...mockRepo, id: 100 }); // GitHub Repo ID is number usually, but here we mock
     
     // Check internal logic flow
     // 1. Repo registered? Yes.
@@ -114,7 +110,7 @@ describe('handleMergedPR', () => {
     vi.mocked(prisma.issue.findFirst).mockResolvedValue(selfDealingIssue as any);
     vi.mocked(prisma.account.findFirst).mockResolvedValue(mockSolverAccount as any);
 
-    const response = await handleMergedPR(mockPullRequest, { ...mockRepo, id: 100 }, mockSender);
+    const response = await handleMergedPR(mockPullRequest, { ...mockRepo, id: 100 });
 
     expect(prisma.$transaction).not.toHaveBeenCalled();
     const json = await (response as NextResponse).json();
@@ -128,7 +124,7 @@ describe('handleMergedPR', () => {
     vi.mocked(prisma.issue.findFirst).mockResolvedValue(mockIssue as any);
     vi.mocked(prisma.account.findFirst).mockResolvedValue(mockSolverAccount as any);
 
-    const response = await handleMergedPR(mockPullRequest, { ...mockRepo, id: 100 }, mockSender);
+    const response = await handleMergedPR(mockPullRequest, { ...mockRepo, id: 100 });
 
     expect(prisma.$transaction).not.toHaveBeenCalled();
     const json = await (response as NextResponse).json();

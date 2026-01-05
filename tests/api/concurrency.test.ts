@@ -12,8 +12,7 @@ vi.mock("next/server", () => {
         headers: Headers;
         _body: unknown;
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        constructor(url: string, init: any) { 
+        constructor(url: string, init: { headers?: HeadersInit; body?: unknown; method?: string }) { 
             this.url = url; 
             this.headers = new Headers(init?.headers);
             this._body = init?.body;
@@ -23,8 +22,7 @@ vi.mock("next/server", () => {
         async text() { return typeof this._body === 'string' ? this._body : JSON.stringify(this._body); }
     },
     NextResponse: {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      json: (body: any, init: any) => ({
+      json: (body: unknown, init: { status?: number }) => ({
         status: init?.status || 200,
         json: async () => body,
         text: async () => JSON.stringify(body),
@@ -106,13 +104,37 @@ describe('Concurrency Tests (Mocked)', () => {
         // Setup valid request
         // @ts-expect-error: Mocking partial user
         vi.mocked(auth).mockResolvedValue({ user: { id: 'user-1' } });
-        vi.mocked(prisma.user.findUnique).mockResolvedValue({ karma: 100 } as any);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        vi.mocked(prisma.issue.findUnique).mockResolvedValue({
+        vi.mocked(prisma.user.findUnique).mockResolvedValue({ id: 'user-1', karma: 100, name: null, username: null, email: null, emailVerified: null, image: null, createdAt: new Date(), updatedAt: new Date() });
+        const mockIssueWithRepo = {
             id: 'iss-1',
+            githubId: 1,
+            number: 1,
+            title: 'test',
+            body: null,
             state: 'open',
-            repository: { registeredById: 'user-1' }
-        } as any); // eslint-disable-line @typescript-eslint/no-explicit-any
+            htmlUrl: 'http://example.com',
+            repositoryId: 'repo-1',
+            authorGithubId: null,
+            authorLogin: null,
+            assigneeId: null,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+        };
+        vi.mocked(prisma.issue.findUnique).mockResolvedValue({
+            ...mockIssueWithRepo,
+            repository: {
+                id: 'repo-1',
+                githubId: 1,
+                name: 'test-repo',
+                fullName: 'user/test-repo',
+                url: 'http://example.com',
+                description: null,
+                stargazersCount: 0,
+                registeredById: 'user-1',
+                createdAt: new Date(),
+                updatedAt: new Date()
+            }
+        } as typeof mockIssueWithRepo & { repository: { registeredById: string } });
 
 
         const req = new NextRequest('http://localhost/api/boost', {
@@ -130,8 +152,7 @@ describe('Concurrency Tests (Mocked)', () => {
         // @ts-expect-error: Mocking partial user
         vi.mocked(auth).mockResolvedValue({ user: { id: 'user-1', accessToken: 'mock' } });
         // Valid karma for registration (500)
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        vi.mocked(prisma.user.findUnique).mockResolvedValue({ karma: 1000 } as any);
+        vi.mocked(prisma.user.findUnique).mockResolvedValue({ id: 'user-1', karma: 1000, name: null, username: null, email: null, emailVerified: null, image: null, createdAt: new Date(), updatedAt: new Date() });
         vi.mocked(prisma.repository.findUnique).mockResolvedValue(null); // Repo not registered yet
 
         const req = new NextRequest('http://localhost/api/repositories', {

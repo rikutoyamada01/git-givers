@@ -49,14 +49,21 @@ describe('Replay Attack Tests', () => {
     merged: true,
   };
 
-  const mockSender = { id: 999 };
 
   const mockIssue = {
     id: 'issue-1',
+    githubId: 1,
     number: 1,
+    title: 'test issue',
+    body: null,
     repositoryId: 'repo-1',
     authorGithubId: 67890,
+    authorLogin: null,
+    assigneeId: null,
     state: 'open', // Initially Open
+    htmlUrl: 'http://example.com',
+    createdAt: new Date(),
+    updatedAt: new Date(),
     boosts: [{ amount: 100 }],
   };
 
@@ -77,7 +84,7 @@ describe('Replay Attack Tests', () => {
     vi.mocked(prisma.account.findFirst).mockResolvedValue(mockSolverAccount as any);
 
     // 1. First Webhook
-    await handleMergedPR(mockPullRequest, { ...mockRepo, id: 100 }, mockSender);
+    await handleMergedPR(mockPullRequest, { ...mockRepo, id: 100 });
     
     // Expect Payout
     expect(prisma.user.update).toHaveBeenCalledTimes(1);
@@ -86,13 +93,12 @@ describe('Replay Attack Tests', () => {
     // IMPORTANT: In a real scenario, the DB state would have changed to 'closed'.
     // Here we mock the DB state change by returning a 'closed' issue for the second call.
     
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     vi.mocked(prisma.issue.findFirst).mockResolvedValue({
         ...mockIssue,
         state: 'closed', // Changed to CLOSED by first call
-    } as any); // eslint-disable-line @typescript-eslint/no-explicit-any
+    });
 
-    await handleMergedPR(mockPullRequest, { ...mockRepo, id: 100 }, mockSender);
+    await handleMergedPR(mockPullRequest, { ...mockRepo, id: 100 });
 
     // BUG: If fixed, it should STILL be 1. If buggy, it might be 2 (if it ignores state).
     // Or if checking transaction history.

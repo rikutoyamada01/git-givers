@@ -9,8 +9,7 @@ vi.mock("next/server", () => {
         url: string;
         headers: Headers;
         _body: unknown;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        constructor(url: string, init: any) { 
+        constructor(url: string, init: { headers?: HeadersInit; body?: unknown; method?: string }) { 
             this.url = url; 
             this.headers = new Headers(init?.headers);
             this._body = init?.body;
@@ -18,8 +17,7 @@ vi.mock("next/server", () => {
         async json() { return typeof this._body === 'string' ? JSON.parse(this._body) : this._body; }
     },
     NextResponse: {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      json: (body: any, init: any) => ({
+      json: (body: unknown, init: { status?: number }) => ({
         status: init?.status || 200,
         json: async () => body,
         text: async () => JSON.stringify(body),

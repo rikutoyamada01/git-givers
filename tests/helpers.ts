@@ -16,8 +16,7 @@ export const mockSession = (overrides?: Partial<Session>): Session => {
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const mockPrismaRepository = (overrides?: Partial<Repository> & Record<string, any>): Repository & Record<string, any> => {
+export const mockPrismaRepository = (overrides?: Partial<Repository> & Record<string, unknown>): Repository & Record<string, unknown> => {
   return {
     id: "repo_1",
     githubId: 12345,

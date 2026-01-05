@@ -1,10 +1,30 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { verify } from "@octokit/webhooks-methods";
 import { extractLinkedIssueNumber } from "@/lib/github";
 import { calculateIssueReward } from "@/lib/karma";
+
+// GitHub Webhook Payload Types
+interface GitHubUser {
+  id: number;
+  login: string;
+}
+
+interface GitHubRepository {
+  id: number;
+  full_name: string;
+}
+
+interface GitHubPullRequest {
+  number: number;
+  body: string | null;
+  user: GitHubUser;
+  merged: boolean;
+}
+
+interface Boost {
+  amount: number;
+}
 
 
 // Exported for testing
@@ -56,10 +76,10 @@ export async function POST(req: NextRequest) {
   }
 
   if (event === "pull_request") {
-    const { action, pull_request, repository, sender: _sender } = payload;
+    const { action, pull_request, repository } = payload;
     // We only care about closed PRs that were merged
     if (action === "closed" && pull_request.merged === true) {
-      return handleMergedPR(pull_request, repository, _sender);
+      return handleMergedPR(pull_request, repository);
     }
   }
 
@@ -68,7 +88,7 @@ export async function POST(req: NextRequest) {
 
 // Exported for testing
  
-export async function handleMergedPR(pr: any, repo: any, sender: any) {
+export async function handleMergedPR(pr: GitHubPullRequest, repo: GitHubRepository) {
   console.log(`Processing merged PR #${pr.number} in ${repo.full_name}`);
   // ... (rest of logic)
   // 1. Check if Repo is registered in GitGivers
@@ -112,7 +132,6 @@ export async function handleMergedPR(pr: any, repo: any, sender: any) {
   }
   
   // 4. Identify Solver (PR Author)
-  // NOTE: 'sender' is the person who triggered the event (merged the PR), usually the maintainer.
   // The 'solver' is the person who wrote the PR code (pr.user).
   const solverGithubId: number = pr.user.id;
   
@@ -145,10 +164,10 @@ export async function handleMergedPR(pr: any, repo: any, sender: any) {
   }
  
   // 5. Calculate Reward
-  const totalUserBoost = (issue as any).boosts.reduce((sum: any, boost: any) => sum + boost.amount, 0);
+  const totalUserBoost = issue.boosts.reduce((sum: number, boost: Boost) => sum + boost.amount, 0);
   
   const reward = calculateIssueReward({
-      stars: (registeredRepo as any).stargazersCount,
+      stars: registeredRepo.stargazersCount,
       totalUserBoost: totalUserBoost,
   });
   

@@ -15,8 +15,7 @@ vi.mock("next/server", () => {
         headers: Headers;
         _body: unknown;
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        constructor(url: string, init: any) { 
+        constructor(url: string, init: { headers?: HeadersInit; body?: unknown; method?: string }) { 
             this.url = url; 
             this.headers = new Headers(init?.headers);
             this._body = init?.body;
@@ -26,8 +25,7 @@ vi.mock("next/server", () => {
         async text() { return typeof this._body === 'string' ? this._body : JSON.stringify(this._body); }
     },
     NextResponse: {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      json: (body: any, init: any) => ({
+      json: (body: unknown, init: { status?: number }) => ({
         status: init?.status || 200,
         json: async () => body,
         text: async () => JSON.stringify(body),
@@ -106,7 +104,6 @@ describe('Security Tests', () => {
                 url: 'http://localhost/api/webhooks/github',
             } as unknown as NextRequest;
 
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             vi.mocked(verify).mockResolvedValue(false);
 
             const res = await webhookHandler(req);
@@ -128,8 +125,7 @@ describe('Security Tests', () => {
 
     describe('API Access Control', () => {
         it('should reject boost requests without login', async () => {
-             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-             vi.mocked(auth).mockResolvedValue(null as unknown as any);
+             vi.mocked(auth as unknown as () => Promise<Session | null>).mockResolvedValue(null);
              
              const req = new NextRequest('http://localhost/api/boost', {
                  method: 'POST',
@@ -141,8 +137,7 @@ describe('Security Tests', () => {
         });
 
         it('should reject repo registration without login', async () => {
-             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-             vi.mocked(auth).mockResolvedValue(null as unknown as any);
+             vi.mocked(auth as unknown as () => Promise<Session | null>).mockResolvedValue(null);
              
              const req = new NextRequest('http://localhost/api/repositories', {
                  method: 'POST',
@@ -154,22 +149,42 @@ describe('Security Tests', () => {
         });
         
         it('should reject boosting an issue in a repo the user does not own', async () => {
-             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-             vi.mocked(auth).mockResolvedValue({ user: { id: 'attacker-id' } } as unknown as any);
+             vi.mocked(auth as unknown as () => Promise<Session | null>).mockResolvedValue({ user: { id: 'attacker-id', name: null, email: null, image: null, accessToken: 'mock' }, expires: '2099-01-01' });
              
              // Mock user has enough karma
-             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-             vi.mocked(prisma.user.findUnique).mockResolvedValue({ karma: 1000 } as unknown as any);
+             vi.mocked(prisma.user.findUnique).mockResolvedValue({ id: 'attacker-id', karma: 1000, name: null, username: null, email: null, emailVerified: null, image: null, createdAt: new Date(), updatedAt: new Date() });
              
-             // Mock Issue exists but belongs to someone else
-             // Mock Issue exists but belongs to someone else
-             vi.mocked(prisma.issue.findUnique).mockResolvedValue({
+             // Mock Issue with repository relation
+             const mockIssue = {
                  id: 'iss-1',
+                 githubId: 1,
+                 number: 1,
+                 title: 'test issue',
+                 body: null,
                  state: 'open',
+                 htmlUrl: 'http://example.com',
+                 repositoryId: 'repo-1',
+                 authorGithubId: null,
+                 authorLogin: null,
+                 assigneeId: null,
+                 createdAt: new Date(),
+                 updatedAt: new Date(),
+             };
+             vi.mocked(prisma.issue.findUnique).mockResolvedValue({
+                 ...mockIssue,
                  repository: {
-                     registeredById: 'victim-id', // NOT attacker-id
+                     id: 'repo-1',
+                     githubId: 1,
+                     name: 'test-repo',
+                     fullName: 'victim/test-repo',
+                     url: 'http://example.com',
+                     description: null,
+                     stargazersCount: 0,
+                     registeredById: 'victim-id',
+                     createdAt: new Date(),
+                     updatedAt: new Date()
                  }
-             } as any); // eslint-disable-line @typescript-eslint/no-explicit-any
+             } as typeof mockIssue & { repository: { registeredById: string } });
              
              const req = new NextRequest('http://localhost/api/boost', {
                  method: 'POST',

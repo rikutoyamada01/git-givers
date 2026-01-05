@@ -32,35 +32,7 @@ vi.mock("octokit", () => {
 
 import { auth } from '@/lib/auth';
 import prisma from '@/lib/prisma';
-
-// Mock next/server
-vi.mock("next/server", () => {
-  return {
-    NextRequest: class {
-        url: string;
-        headers: Headers;
-        _body: unknown;
-
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        constructor(url: string, init: any) { 
-            this.url = url; 
-            this.headers = new Headers(init?.headers);
-            this._body = init?.body;
-        }
-        
-        async json() { return typeof this._body === 'string' ? JSON.parse(this._body) : this._body; }
-        async text() { return typeof this._body === 'string' ? this._body : JSON.stringify(this._body); }
-    },
-    NextResponse: {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      json: (body: any, init: any) => ({
-        status: init?.status || 200,
-        json: async () => body,
-        text: async () => JSON.stringify(body),
-      }),
-    },
-  };
-});
+import type { Session } from 'next-auth';
 
 // Mock Prisma
 vi.mock('@/lib/prisma', () => ({
@@ -80,8 +52,7 @@ vi.mock('@/lib/prisma', () => ({
 describe('Edge Case & Input Validation Tests', () => {
     beforeEach(() => {
         vi.clearAllMocks();
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        vi.mocked(auth).mockResolvedValue({ user: { id: 'user-1', accessToken: 'mock' } } as any);
+        vi.mocked(auth as unknown as () => Promise<Session | null>).mockResolvedValue({ user: { id: 'user-1', accessToken: 'mock', name: null, email: null, image: null }, expires: '2099-01-01' });
     });
 
     describe('Boost API', () => {
@@ -115,8 +86,7 @@ describe('Edge Case & Input Validation Tests', () => {
         });
         
          it('should return 404 for non-existent issue', async () => {
-             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-             vi.mocked(prisma.user.findUnique).mockResolvedValue({ karma: 1000 } as any);
+             vi.mocked(prisma.user.findUnique).mockResolvedValue({ id: 'user-1', karma: 1000, name: null, username: null, email: null, emailVerified: null, image: null, createdAt: new Date(), updatedAt: new Date() });
              vi.mocked(prisma.issue.findUnique).mockResolvedValue(null);
 
              const req = new NextRequest('http://localhost/api/boost', {
@@ -139,8 +109,7 @@ describe('Edge Case & Input Validation Tests', () => {
         });
         
         it('should return 409 if repository already exists', async () => {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            vi.mocked(prisma.repository.findUnique).mockResolvedValue({ id: 'exists' } as any);
+            vi.mocked(prisma.repository.findUnique).mockResolvedValue({ id: 'exists', githubId: 123, name: 'repo', fullName: 'user/repo', url: 'http://example.com', description: null, stargazersCount: 0, registeredById: 'user-1', createdAt: new Date(), updatedAt: new Date() });
             
              const req = new NextRequest('http://localhost/api/repositories', {
                  method: 'POST',
