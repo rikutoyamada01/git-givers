@@ -108,7 +108,7 @@ export default function RegisterRepositoryView({ onCancel }: RegisterRepositoryV
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          githubId: selectedRepo.id
+          githubId: selectedRepo.id // Removed trailing comma
         }),
       })
 

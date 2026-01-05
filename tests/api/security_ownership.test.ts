@@ -1,5 +1,4 @@
-
-import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { POST as registerHandler } from '../../src/app/api/repositories/route';
 import { NextRequest } from "next/server";
 
@@ -9,7 +8,8 @@ vi.mock("next/server", () => {
     NextRequest: class {
         url: string;
         headers: Headers;
-        _body: any;
+        _body: unknown;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         constructor(url: string, init: any) { 
             this.url = url; 
             this.headers = new Headers(init?.headers);
@@ -18,6 +18,7 @@ vi.mock("next/server", () => {
         async json() { return typeof this._body === 'string' ? JSON.parse(this._body) : this._body; }
     },
     NextResponse: {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       json: (body: any, init: any) => ({
         status: init?.status || 200,
         json: async () => body,
@@ -69,7 +70,7 @@ const mockRequest = vi.fn();
 vi.mock("octokit", () => {
     return {
         Octokit: class {
-            constructor(options: any) {}
+            constructor() {}
             request = mockRequest;
         }
     };
@@ -86,7 +87,7 @@ describe('Repository Registration Security', () => {
     beforeEach(() => {
         vi.clearAllMocks();
         // Default User Karma (Sufficient)
-        // @ts-expect-error
+        // @ts-expect-error: Mocking partial return type
         vi.mocked(prisma.user.findUnique).mockResolvedValue({ karma: 1000 });
         // Default Repo not exists
         vi.mocked(prisma.repository.findUnique).mockResolvedValue(null);
@@ -109,6 +110,7 @@ describe('Repository Registration Security', () => {
         });
 
         const res = await registerHandler(req);
+        
         expect(res.status).toBe(403);
         const json = await res.json();
         expect(json.message).toContain("must be an admin");

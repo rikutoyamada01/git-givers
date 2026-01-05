@@ -5,6 +5,7 @@ import { POST as boostHandler } from '../../src/app/api/boost/route';
 import { POST as registerHandler } from '../../src/app/api/repositories/route';
 import { NextRequest } from "next/server";
 import { verify } from "@octokit/webhooks-methods";
+import type { Session } from "next-auth";
 
 // Mock next/server
 vi.mock("next/server", () => {
@@ -14,6 +15,7 @@ vi.mock("next/server", () => {
         headers: Headers;
         _body: unknown;
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         constructor(url: string, init: any) { 
             this.url = url; 
             this.headers = new Headers(init?.headers);
@@ -24,6 +26,7 @@ vi.mock("next/server", () => {
         async text() { return typeof this._body === 'string' ? this._body : JSON.stringify(this._body); }
     },
     NextResponse: {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       json: (body: any, init: any) => ({
         status: init?.status || 200,
         json: async () => body,
@@ -79,7 +82,7 @@ describe('Security Tests', () => {
         it('should reject requests with missing signature', async () => {
             const req = {
                 headers: { 
-                    get: (key: string) => null 
+                    get: () => null 
                 },
                 text: async () => JSON.stringify({ action: 'test' }),
                 method: 'POST',
@@ -103,6 +106,7 @@ describe('Security Tests', () => {
                 url: 'http://localhost/api/webhooks/github',
             } as unknown as NextRequest;
 
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             vi.mocked(verify).mockResolvedValue(false);
 
             const res = await webhookHandler(req);
@@ -124,7 +128,8 @@ describe('Security Tests', () => {
 
     describe('API Access Control', () => {
         it('should reject boost requests without login', async () => {
-             vi.mocked(auth).mockResolvedValue(null);
+             // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             vi.mocked(auth).mockResolvedValue(null as unknown as any);
              
              const req = new NextRequest('http://localhost/api/boost', {
                  method: 'POST',
@@ -136,7 +141,8 @@ describe('Security Tests', () => {
         });
 
         it('should reject repo registration without login', async () => {
-             vi.mocked(auth).mockResolvedValue(null);
+             // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             vi.mocked(auth).mockResolvedValue(null as unknown as any);
              
              const req = new NextRequest('http://localhost/api/repositories', {
                  method: 'POST',
@@ -148,11 +154,14 @@ describe('Security Tests', () => {
         });
         
         it('should reject boosting an issue in a repo the user does not own', async () => {
-             vi.mocked(auth).mockResolvedValue({ user: { id: 'attacker-id' } });
+             // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             vi.mocked(auth).mockResolvedValue({ user: { id: 'attacker-id' } } as unknown as any);
              
              // Mock user has enough karma
-             vi.mocked(prisma.user.findUnique).mockResolvedValue({ karma: 1000 });
+             // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             vi.mocked(prisma.user.findUnique).mockResolvedValue({ karma: 1000 } as unknown as any);
              
+             // Mock Issue exists but belongs to someone else
              // Mock Issue exists but belongs to someone else
              vi.mocked(prisma.issue.findUnique).mockResolvedValue({
                  id: 'iss-1',
@@ -160,7 +169,7 @@ describe('Security Tests', () => {
                  repository: {
                      registeredById: 'victim-id', // NOT attacker-id
                  }
-             });
+             } as any); // eslint-disable-line @typescript-eslint/no-explicit-any
              
              const req = new NextRequest('http://localhost/api/boost', {
                  method: 'POST',

@@ -62,7 +62,10 @@ describe("API /api/issues", () => {
     })
     
      it("should return 401 if access token is missing", async () => {
-      vi.mocked(auth as unknown as () => Promise<Session | null>).mockResolvedValue(mockSession()) // No access token
+      const sessionWithoutToken = mockSession();
+      // @ts-expect-error: Explicitly deleting token for test
+      delete sessionWithoutToken.user.accessToken;
+      vi.mocked(auth as unknown as () => Promise<Session | null>).mockResolvedValue(sessionWithoutToken)
 
       const request = new NextRequest("http://localhost/api/issues/sync", {
         method: "POST",

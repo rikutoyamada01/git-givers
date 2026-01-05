@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { verify } from "@octokit/webhooks-methods";
 import { extractLinkedIssueNumber } from "@/lib/github";
-import { calculateIssueReward, validateIssuePayout } from "@/lib/karma";
+import { calculateIssueReward } from "@/lib/karma";
 
 
 // Exported for testing
@@ -56,11 +56,10 @@ export async function POST(req: NextRequest) {
   }
 
   if (event === "pull_request") {
-    const { action, pull_request, repository, sender } = payload;
-
+    const { action, pull_request, repository, sender: _sender } = payload;
     // We only care about closed PRs that were merged
     if (action === "closed" && pull_request.merged === true) {
-      return handleMergedPR(pull_request, repository, sender);
+      return handleMergedPR(pull_request, repository, _sender);
     }
   }
 

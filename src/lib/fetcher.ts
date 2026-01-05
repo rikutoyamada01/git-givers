@@ -1,10 +1,8 @@
 export class HttpError extends Error {
   status: number;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  info: any;
+  info: unknown;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  constructor(message: string, status: number, info: any) {
+  constructor(message: string, status: number, info: unknown) {
     super(message);
     this.status = status;
     this.info = info;

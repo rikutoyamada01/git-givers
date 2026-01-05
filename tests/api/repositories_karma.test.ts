@@ -27,6 +27,27 @@ vi.mock('@/lib/auth', () => ({
   auth: vi.fn(),
 }))
 
+// Mock octokit
+vi.mock("octokit", () => {
+  return {
+    Octokit: class {
+        async request() {
+            return {
+                data: {
+                    id: 12345,
+                    name: 'test-repo',
+                    full_name: 'user/test-repo',
+                    html_url: 'https://github.com/user/test-repo',
+                    description: 'A test repository',
+                    stargazers_count: 0,
+                    permissions: { admin: true },
+                }
+            };
+        }
+    }
+  };
+});
+
 describe('POST /api/repositories (Karma Logic)', () => {
   const mockUser = {
     id: 'user-1',
@@ -97,7 +118,7 @@ describe('POST /api/repositories (Karma Logic)', () => {
   })
 
   it('should successfully register repository and deduct Karma', async () => {
-    vi.mocked(auth).mockResolvedValueOnce({ user: { id: 'user-1' } } as any)
+    vi.mocked(auth).mockResolvedValueOnce({ user: { id: 'user-1', accessToken: 'mock' } } as any)
     vi.mocked(prisma.repository.findUnique).mockResolvedValueOnce(null)
     // User has 100 Karma
     vi.mocked(prisma.user.findUnique).mockResolvedValueOnce({ ...mockUser } as any)

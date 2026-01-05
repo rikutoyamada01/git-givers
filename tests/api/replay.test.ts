@@ -1,8 +1,8 @@
 
-import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { handleMergedPR } from '../../src/app/api/webhooks/github/route';
 import prisma from '../../src/lib/prisma';
-import { NextResponse } from 'next/server';
+
 
 // Mock prisma
 vi.mock('../../src/lib/prisma', () => ({
@@ -69,8 +69,11 @@ describe('Replay Attack Tests', () => {
   };
 
   it('should prevent double payout if webhook is sent twice', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     vi.mocked(prisma.repository.findUnique).mockResolvedValue(mockRepo as any);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     vi.mocked(prisma.issue.findFirst).mockResolvedValue(mockIssue as any); // Returns OPEN issue
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     vi.mocked(prisma.account.findFirst).mockResolvedValue(mockSolverAccount as any);
 
     // 1. First Webhook
@@ -83,10 +86,11 @@ describe('Replay Attack Tests', () => {
     // IMPORTANT: In a real scenario, the DB state would have changed to 'closed'.
     // Here we mock the DB state change by returning a 'closed' issue for the second call.
     
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     vi.mocked(prisma.issue.findFirst).mockResolvedValue({
         ...mockIssue,
         state: 'closed', // Changed to CLOSED by first call
-    } as any);
+    } as any); // eslint-disable-line @typescript-eslint/no-explicit-any
 
     await handleMergedPR(mockPullRequest, { ...mockRepo, id: 100 }, mockSender);
 

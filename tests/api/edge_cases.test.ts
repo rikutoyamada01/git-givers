@@ -9,6 +9,27 @@ vi.mock('@/lib/auth', () => ({
   auth: vi.fn(),
 }));
 
+// Mock octokit
+vi.mock("octokit", () => {
+  return {
+    Octokit: class {
+        async request() {
+            return {
+                data: {
+                    id: 123,
+                    name: 'repo',
+                    full_name: 'user/repo',
+                    html_url: 'http://example.com',
+                    description: 'desc',
+                    stargazers_count: 0,
+                    permissions: { admin: true },
+                }
+            };
+        }
+    }
+  };
+});
+
 import { auth } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 
@@ -18,8 +39,9 @@ vi.mock("next/server", () => {
     NextRequest: class {
         url: string;
         headers: Headers;
-        _body: any;
+        _body: unknown;
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         constructor(url: string, init: any) { 
             this.url = url; 
             this.headers = new Headers(init?.headers);
@@ -30,6 +52,7 @@ vi.mock("next/server", () => {
         async text() { return typeof this._body === 'string' ? this._body : JSON.stringify(this._body); }
     },
     NextResponse: {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       json: (body: any, init: any) => ({
         status: init?.status || 200,
         json: async () => body,
@@ -57,7 +80,8 @@ vi.mock('@/lib/prisma', () => ({
 describe('Edge Case & Input Validation Tests', () => {
     beforeEach(() => {
         vi.clearAllMocks();
-        vi.mocked(auth).mockResolvedValue({ user: { id: 'user-1' } } as any);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        vi.mocked(auth).mockResolvedValue({ user: { id: 'user-1', accessToken: 'mock' } } as any);
     });
 
     describe('Boost API', () => {
@@ -91,6 +115,7 @@ describe('Edge Case & Input Validation Tests', () => {
         });
         
          it('should return 404 for non-existent issue', async () => {
+             // eslint-disable-next-line @typescript-eslint/no-explicit-any
              vi.mocked(prisma.user.findUnique).mockResolvedValue({ karma: 1000 } as any);
              vi.mocked(prisma.issue.findUnique).mockResolvedValue(null);
 
@@ -107,13 +132,14 @@ describe('Edge Case & Input Validation Tests', () => {
         it('should reject missing required fields', async () => {
              const req = new NextRequest('http://localhost/api/repositories', {
                  method: 'POST',
-                 body: JSON.stringify({ githubId: 123 }), // Missing name, url, etc.
+                 body: JSON.stringify({ name: 'repo' }), // Missing githubId
              });
              const res = await registerHandler(req);
              expect(res.status).toBe(400);
         });
         
         it('should return 409 if repository already exists', async () => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             vi.mocked(prisma.repository.findUnique).mockResolvedValue({ id: 'exists' } as any);
             
              const req = new NextRequest('http://localhost/api/repositories', {
