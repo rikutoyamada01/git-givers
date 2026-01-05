@@ -108,12 +108,7 @@ export default function RegisterRepositoryView({ onCancel }: RegisterRepositoryV
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          githubId: selectedRepo.id,
-          name: selectedRepo.name,
-          fullName: selectedRepo.full_name,
-          url: selectedRepo.html_url,
-          description: selectedRepo.description,
-          stargazersCount: selectedRepo.stargazers_count, 
+          githubId: selectedRepo.id
         }),
       })
 

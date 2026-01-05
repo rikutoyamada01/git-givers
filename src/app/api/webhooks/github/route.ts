@@ -105,6 +105,12 @@ export async function handleMergedPR(pr: any, repo: any, sender: any) {
       console.log(`Issue #${issueNumber} not found in DB. Skipping payout.`);
       return NextResponse.json({ message: `Issue #${issueNumber} not monitored` }, { status: 200 });
   }
+
+  // CRITICAL FIX: Prevent Replay Attack / Double Spending
+  if (issue.state === 'closed') {
+      console.log(`Issue #${issueNumber} is already closed. Skipping payout to prevent double-spending.`);
+      return NextResponse.json({ message: "Issue already closed", type: "replay_prevention" }, { status: 200 });
+  }
   
   // 4. Identify Solver (PR Author)
   // NOTE: 'sender' is the person who triggered the event (merged the PR), usually the maintainer.

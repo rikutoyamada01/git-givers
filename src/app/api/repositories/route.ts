@@ -12,9 +12,9 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { githubId, name, fullName, url, description, stargazersCount } = await req.json()
+    const { githubId } = await req.json()
 
-    if (!githubId || !name || !fullName || !url) {
+    if (!githubId) {
       return NextResponse.json(
         { message: "Missing required repository fields" },
         { status: 400 },
@@ -45,6 +45,42 @@ export async function POST(req: NextRequest) {
       )
     }
 
+    // SECURITY: Authenticate with GitHub to verify ownership and get real data
+    // We use the USER's access token to check if *they* have admin rights.
+    if (!session.user.accessToken) {
+        return NextResponse.json(
+            { message: "GitHub Access Token missing. Please log in again." },
+            { status: 401 }
+        );
+    }
+
+    let repoData;
+    try {
+        const { Octokit } = await import("octokit");
+        const octokit = new Octokit({ auth: session.user.accessToken });
+        
+        // Fetch repository details
+        const { data } = await octokit.request('GET /repositories/{id}', {
+            id: githubId
+        });
+        
+        // 1. Ownership Verification (Must be admin)
+        if (!data.permissions?.admin) {
+             return NextResponse.json(
+                { message: "You must be an admin of the repository to register it." },
+                { status: 403 }
+            );
+        }
+
+        repoData = data;
+    } catch (ghError) {
+        console.error("GitHub API Error:", ghError);
+         return NextResponse.json(
+            { message: "Failed to verify repository with GitHub." },
+            { status: 404 }
+        );
+    }
+
     // Execute transaction: Deduct Karma, Create Transaction, Create Repository
     const result = await prisma.$transaction(async (tx) => {
       // 1. Deduct Karma
@@ -57,23 +93,24 @@ export async function POST(req: NextRequest) {
       await tx.transaction.create({
         data: {
           amount: -REPOSITORY_REGISTRATION_COST, // Negative for spending
-          description: `Register repository: ${fullName}`,
+          description: `Register repository: ${repoData.full_name}`,
           userId: session.user.id!,
         },
       })
 
       // 3. Create Repository
+      // CRITICAL: We use data from GitHub (repoData), NOT from client input.
       const newRepository = await tx.repository.create({
         data: {
-          githubId,
-          name,
-          fullName,
-          url,
-          description,
-          stargazersCount: stargazersCount || 0,
+          githubId: repoData.id,
+          name: repoData.name,
+          fullName: repoData.full_name,
+          url: repoData.html_url,
+          description: repoData.description || "",
+          stargazersCount: repoData.stargazers_count, // Trusted source
           registeredBy: {
             connect: {
-              id: session.user.id,
+              id: session.user.id!,
             },
           },
         },
@@ -89,9 +126,9 @@ export async function POST(req: NextRequest) {
         try {
             const { syncRepositoryIssues } = await import("@/lib/github-sync");
             await syncRepositoryIssues(result.id, session.user.accessToken);
-            console.log(`Auto-synced issues for newly registered repo: ${fullName}`);
+            console.log(`Auto-synced issues for newly registered repo: ${repoData.full_name}`);
         } catch (syncError) {
-            console.error(`Auto-sync failed for ${fullName}:`, syncError);
+            console.error(`Auto-sync failed for ${repoData.full_name}:`, syncError);
         }
     }
 
