@@ -13,8 +13,10 @@ The forge logic. How to build the environment.
 The engine room. "Why" we built it this way.
 -   **[Chapter 1: Introduction](architecture/01-introduction.md)**: The philosophy and concepts.
 -   **[Chapter 2: System Architecture](architecture/02-system-architecture.md)**: Next.js, Vercel, and the Stack.
--   **[Chapter 3: Database Design](architecture/03-database-design.md)**: The Prisma schema and ERO.
+-   **[Chapter 3: Database Design](architecture/03-database-design.md)**: The Prisma schema and ERD.
 -   **[Chapter 4: Core Logic](architecture/04-core-logic.md)**: The Karma math and State Machines.
+-   **[Chapter 5: Devtools](architecture/05-devtool-spec.md)**: Local-only development tools (Japanese).
+-   **[Chapter 6: Session Handling](architecture/06-session-handling.md)**: Authentication and zombie session handling.
 
 ### [3. Guidelines (The Law)](guidelines/)
 How to contribute without breaking things.
@@ -25,7 +27,8 @@ How to contribute without breaking things.
 ### [4. Planning (The Future)](planning/)
 Where we are going.
 -   **[Chapter 5: Grand Roadmap](planning/01-grand-roadmap.md)**: Phase 1 to Moonshot.
--   *Archive*: Older brainstorming docs are kept here for reference.
+-   **[Chapter 6: Feature Ideas](planning/02-feature-ideas.md)**: Brainstorming and wild ideas.
+-   *Archive*: Completed feature specs and implementation notes are kept in the [archive](archive/) for reference.
 
 ### [5. Archive (The Past)](archive/)
 -   **Decision Records (ADRs)**: Important decisions like renames or stack choices.

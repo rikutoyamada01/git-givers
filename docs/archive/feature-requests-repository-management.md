@@ -1,16 +1,22 @@
-# Feature: Repository Management
+# Feature Specification: Repository Management
 
-This document outlines the requirements for the repository management feature in GitKarma, which includes registering a user's own repositories and browsing all repositories registered on the platform.
+> **Status**: ✅ IMPLEMENTED (January 2026)  
+> **Original Location**: `docs/planning/feature-requests.md`  
+> **Moved to Archive**: 2026-01-09
+
+This document outlines the requirements for the repository management feature in GitGivers, which includes registering a user's own repositories and browsing all repositories registered on the platform.
+
+---
 
 ## 1. High-Level Goal
 
-To allow users to register their own GitHub repositories with GitKarma, and to browse all repositories that have been registered on the platform.
+To allow users to register their own GitHub repositories with GitGivers, and to browse all repositories that have been registered on the platform.
 
 ## 2. User Stories
 
 - As a user, I want to see a list of my own GitHub repositories so that I can choose which one to register.
-- As a user, I want to select a repository from the list and have it saved to my GitKarma profile.
-- As a user, I want to view a list of all repositories that have been registered on GitKarma, so that I can see what other projects are available for contribution.
+- As a user, I want to select a repository from the list and have it saved to my GitGivers profile.
+- As a user, I want to view a list of all repositories that have been registered on GitGivers, so that I can see what other projects are available for contribution.
 - As a user, after I register a repository, I should receive clear feedback that the action was successful.
 
 ## 3. Functional Requirements
@@ -28,16 +34,16 @@ To allow users to register their own GitHub repositories with GitKarma, and to b
 - **Returns:** A list of the user's repositories that are not forks.
 
 #### `POST /api/repositories`
-- **Purpose:** Registers a new repository in the GitKarma database.
+- **Purpose:** Registers a new repository in the GitGivers database.
 - **Authentication:** Requires a valid user session.
-- **Request Body:** Contains the details of the repository selected by the user (e.g., `githubId`, `name`, `fullName`, `description`, `url`).
+- **Request Body:** Contains the details of the repository selected by user (e.g., `githubId`, `name`, `fullName`, `description`, `url`).
 - **Logic:**
   - Checks for duplicate registrations based on `githubId`.
   - Creates a new `Repository` record and links it to the authenticated user.
 - **Returns:** The newly created repository object.
 
 #### `GET /api/repositories`
-- **Purpose:** Fetches all repositories that have been registered in the GitKarma database for browsing.
+- **Purpose:** Fetches all repositories that have been registered in the GitGivers database for browsing.
 - **Authentication:** Requires a valid user session.
 - **Logic:** Retrieves a paginated list of all `Repository` records, including information about the owner (user who registered it).
 - **Returns:** A paginated list of registered repositories.
@@ -53,10 +59,38 @@ The user dashboard will be updated with two new distinct views:
     - The UI will provide clear loading states and success/error feedback for the registration process.
 
 2.  **Browse Repositories View:**
-    - A dedicated page for discovering all projects registered on GitKarma.
+    - A dedicated page for discovering all projects registered on GitGivers.
     - It will fetch and display a list of repositories from `GET /api/repositories`.
     - The UI will be designed for browsing and discovery, potentially including search and filter capabilities in the future.
 
 ### 4. Authentication
 
 - The NextAuth.js session will be configured to include the user's GitHub `access_token`. This is essential for fetching the user's private repositories during the registration process.
+
+---
+
+## Implementation Notes
+
+**Actual Implementation Details:**
+
+- **Database**: Implemented in `prisma/schema.prisma` with `Repository` model including `registeredBy` relationship
+- **Backend**:
+  - `src/app/api/github/repos/route.ts` - Fetches user's GitHub repos
+  - `src/app/api/repositories/route.ts` - POST (register) and GET (browse) endpoints
+  - Includes ownership verification using GitHub API
+  - 500 Karma registration fee implemented
+  - Automatic issue synchronization on registration
+- **Frontend**:
+  - `src/components/dashboard/views/RegisterRepositoryView.tsx` - Full registration UI
+  - Integrated into dashboard navigation
+- **Tests**: 
+  - `tests/api/repositories.test.ts` - API endpoint tests
+
+**Key Security Features:**
+- Ownership verification via GitHub API
+- Uses user's access token to verify admin permissions
+- Prevents registration of repositories user doesn't own
+
+**See Also:**
+- Implementation tracked in commit history (January 2026)
+- For current repository features, see main documentation

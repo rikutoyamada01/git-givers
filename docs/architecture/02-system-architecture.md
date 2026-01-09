@@ -43,7 +43,7 @@ graph TD
 ## 2.3 The Logic Flow
 How does an Issue get into our system?
 
-1.  **Trigger**: Repository Owner comments `@gitkarma` on a GitHub Issue.
+1.  **Trigger**: Repository Owner comments `@gitgivers` on a GitHub Issue (planned feature).
 2.  **Webhook**: GitHub notifies GitGivers.
 3.  **Analysis**: We verify the repo is public.
 4.  **Registration**: The Issue is saved to our DB with status `Open`.

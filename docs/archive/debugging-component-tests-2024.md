@@ -1,8 +1,17 @@
-# Issue Summary: Component Tests Failing for Repository Management Feature
+# Debugging Notes: Component Test Failures (2024-2025)
+
+> **Status**: ⚠️ Technical Debt  
+> **Original Location**: `docs/planning/issue-summary.md`  
+> **Moved to Archive**: 2026-01-09  
+> **Note**: ADR to be created separately with final resolution
+
+This document captures a handover of implementation work and debugging notes for component test failures encountered during the repository management feature development.
+
+---
 
 ## 1. Objective
 
-The goal was to implement the repository management feature as outlined in `docs/FEATURE_REQUEST.md`.
+The goal was to implement the repository management feature as outlined in `docs/FEATURE_REQUEST.md` (now archived as `feature-requests-repository-management.md`).
 
 ## 2. Current Status
 
@@ -75,50 +84,49 @@ Despite these efforts, the component tests continue to fail because they do not 
 
 4.  **Alternative Mocking**: Instead of mocking `useSession`, consider wrapping the component in a test-specific `SessionProvider` with a mocked session object.
 
-This concludes the handover document. The codebase is fully implemented for the feature, but the component tests require further debugging.
-1. Re-examine mocking strategy for useSession
+## 7. Additional Debugging Notes
 
-Vitest sometimes fails to re-render when hooks return new values via mockReturnValue().
+### Re-examine mocking strategy for useSession
+
+Vitest sometimes fails to re-render when hooks return new values via `mockReturnValue()`.
 
 A more stable approach is needed.
 
-2. Try explicit act()
+### Try explicit act()
 
-Even though waitFor() wraps assertions in act(), React rendering triggered by mocked hooks may still require:
+Even though `waitFor()` wraps assertions in `act()`, React rendering triggered by mocked hooks may still require:
 
+```typescript
 await act(async () => {
   render(<Component />);
 });
+```
 
-3. Investigate NextAuth v5 beta behavior
+### Investigate NextAuth v5 beta behavior
 
 The project uses:
 
+```
 next-auth@5.0.0-beta.30
-
+```
 
 There may be known issues with:
-
-hook mocking
-
-React context rendering
-
-SSR emulation in test env
+- hook mocking
+- React context rendering
+- SSR emulation in test env
 
 Searching for:
-
-“vitest”
-
-“useSession”
-
-“next-auth v5 beta tests”
+- "vitest"
+- "useSession"
+- "next-auth v5 beta tests"
 
 might surface relevant issues.
 
-4. Try using a test SessionProvider instead of mocking useSession
+### Try using a test SessionProvider instead of mocking useSession
 
 Example:
 
+```typescript
 import { SessionProvider } from "next-auth/react";
 
 render(
@@ -126,6 +134,20 @@ render(
     <BrowseRepositoriesView />
   </SessionProvider>
 );
-
+```
 
 This avoids mocking the hook entirely and provides a real context, which often fixes re-render issues.
+
+---
+
+## Resolution Status
+
+**As of 2026-01-09**: Issue remains unresolved. Component tests are still failing.
+
+**Recommended Action**: Create an ADR documenting the final solution once resolved, as this will likely set precedent for future testing patterns.
+
+**See Also**:
+- `tests/components/dashboard/BrowseRepositoriesView.test.tsx`
+- `tests/components/dashboard/RegisterRepositoryView.test.tsx`
+- `tests/setup.ts`
+- NextAuth v5 testing documentation
